@@ -118,11 +118,12 @@ def main():
                 cpu_offload=a.cpu_offload,
             )
             tmp = out / (cell_to_file(r.cell) + ".part")
-            img.save(tmp)                      # write-then-rename so a killed job
+            img.save(tmp, format="PNG")                      # write-then-rename so a killed job
             tmp.rename(out / cell_to_file(r.cell))   # never leaves a truncated PNG
             status = "ok"
         except Exception as e:                 # noqa: BLE001 - one bad cell must not end the run
             status = f"error:{type(e).__name__}:{str(e)[:80]}"
+            (out / (cell_to_file(r.cell) + ".part")).unlink(missing_ok=True)
             print(f"  [{r.cell}] {status}", flush=True)
         log.add(r.cell, status, time.time() - t)
         if n % 25 == 0:

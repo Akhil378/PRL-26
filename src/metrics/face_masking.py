@@ -99,16 +99,52 @@ def plan_crops(face_bbox: Box, image_size: Tuple[int, int],
     return CropResult(face, bg, "ok" if bg else "no_background_region")
 
 
+PHOTO_PHRASE = "a natural colour photograph"
+
+
 def face_masking_index(image, style_phrase: str, face_bbox: Box, backend,
-                       dilate_factor: float = 1.2):
+                       dilate_factor: float = 1.2,
+                       photo_phrase: str = PHOTO_PHRASE) -> dict:
     """FMI for one image. `backend` supplies .clip_similarity(PIL.Image, str).
 
-    Returns (fmi, style_face, style_bg, reason); fmi is None when no valid
-    background region exists.
+    Two formulations are returned, because local controls showed the obvious one
+    is the weaker of the two:
+
+      fmi_style = style(background) - style(face)
+      fmi_photo = photo(face) - photo(background)
+
+    Both are positive when the face resisted stylisation. `fmi_photo` is the
+    more sensitive of the two: an NPR-stylised image moved CLIP's "a natural
+    colour photograph" score by -0.0163 while moving "an oil painting" by only
+    +0.0015, roughly a tenfold difference in signal. Losing photorealism is
+    easier for CLIP to see than acquiring a specific painterly style.
+
+    IMPORTANT -- neither number is interpretable in absolute terms. A face crop
+    and a background crop have different content, and that alone shifts the
+    style score: with no stylisation anywhere, a face crop scored 0.2233 against
+    "an oil painting" and a background crop 0.2148, an 0.0085 offset comparable
+    in size to the effects being measured. Always report the paired difference
+    against the photoreal control condition for the same identity, base prompt
+    and seed; that is what cancels the crop-content bias, and it is the reason
+    the photoreal condition is in the design.
+
+    Returns a dict; the fmi_* entries are None when no valid background exists.
     """
     plan = plan_crops(face_bbox, image.size, dilate_factor)
-    s_face = backend.clip_similarity(image.crop(plan.face), style_phrase)
+    face_img = image.crop(plan.face)
+    out = {
+        "style_face": backend.clip_similarity(face_img, style_phrase),
+        "photo_face": backend.clip_similarity(face_img, photo_phrase),
+        "style_bg": None, "photo_bg": None,
+        "fmi_style": None, "fmi_photo": None,
+        "fmi_reason": plan.reason,
+    }
     if plan.background is None:
-        return None, s_face, None, plan.reason
-    s_bg = backend.clip_similarity(image.crop(plan.background), style_phrase)
-    return s_bg - s_face, s_face, s_bg, "ok"
+        return out
+    bg_img = image.crop(plan.background)
+    out["style_bg"] = backend.clip_similarity(bg_img, style_phrase)
+    out["photo_bg"] = backend.clip_similarity(bg_img, photo_phrase)
+    out["fmi_style"] = out["style_bg"] - out["style_face"]
+    out["fmi_photo"] = out["photo_face"] - out["photo_bg"]
+    out["fmi_reason"] = "ok"
+    return out

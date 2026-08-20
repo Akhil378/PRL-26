@@ -2,8 +2,8 @@
 #SBATCH --job-name=pulid-gen
 #SBATCH --partition=a100
 #SBATCH --gres=gpu:a100:1
-#SBATCH --time=24:00:00
-#SBATCH --array=0-3
+#SBATCH --time=02:19:00
+#SBATCH --array=0-7
 #SBATCH --output=logs/%x_%A_%a.out
 #SBATCH --error=logs/%x_%A_%a.err
 
@@ -21,4 +21,4 @@ srun python src/gen_pulid.py \
   --out      "$PRL/results/images/pulid" \
   --pulid-repo "$PRL/PuLID" \
   --offload \
-  --shard "$SLURM_ARRAY_TASK_ID" --num-shards 4
+  --shard "$SLURM_ARRAY_TASK_ID" --num-shards 8

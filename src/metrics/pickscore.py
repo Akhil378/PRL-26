@@ -20,6 +20,8 @@ from typing import List, Union
 import torch
 from PIL import Image
 
+from src.metrics.clip_backend import _pool
+
 MODEL_ID = "yuvalkirstain/PickScore_v1"
 PROCESSOR_ID = "laion/CLIP-ViT-H-14-laion2B-s32B-b79K"
 PAPER_SCALE = 100.0
@@ -40,8 +42,8 @@ class PickScorer:
         ii = self.proc(images=images, return_tensors="pt").to(self.device)
         tt = self.proc(text=[text], return_tensors="pt", padding=True,
                        truncation=True, max_length=77).to(self.device)
-        ie = torch.nn.functional.normalize(self.model.get_image_features(**ii), dim=-1)
-        te = torch.nn.functional.normalize(self.model.get_text_features(**tt), dim=-1)
+        ie = torch.nn.functional.normalize(_pool(self.model.get_image_features(**ii)), dim=-1)
+        te = torch.nn.functional.normalize(_pool(self.model.get_text_features(**tt)), dim=-1)
         s = self.model.logit_scale.exp() * (te @ ie.T)[0]
         return [float(v) for v in s]
 

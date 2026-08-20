@@ -26,6 +26,24 @@ BACKBONES = {
 }
 
 
+def _pool(out):
+    """Projected joint-space embedding, across transformers versions.
+
+    transformers 4.x returns a Tensor from get_image_features/get_text_features.
+    transformers 5.x returns BaseModelOutputWithPooling, where `pooler_output`
+    is the projected embedding (its width equals config.projection_dim) and
+    `last_hidden_state` is the *unprojected* backbone output. Taking the wrong
+    field silently compares a 768-d vision space against a 512-d joint space,
+    which either crashes or -- worse -- produces plausible nonsense.
+    """
+    if isinstance(out, torch.Tensor):
+        return out
+    pooled = getattr(out, "pooler_output", None)
+    if pooled is None:
+        raise TypeError(f"unexpected CLIP output {type(out).__name__}")
+    return pooled
+
+
 class CLIPBackend:
     def __init__(self, backbone: str = "L14", device: str = "cuda"):
         from transformers import CLIPModel, CLIPProcessor
@@ -39,7 +57,7 @@ class CLIPBackend:
         if isinstance(images, Image.Image):
             images = [images]
         batch = self.proc(images=images, return_tensors="pt").to(self.device)
-        f = self.model.get_image_features(**batch)
+        f = _pool(self.model.get_image_features(**batch))
         return torch.nn.functional.normalize(f, dim=-1)
 
     @torch.no_grad()
@@ -47,7 +65,7 @@ class CLIPBackend:
     def _encode_text_cached(self, text: str) -> torch.Tensor:
         batch = self.proc(text=[text], return_tensors="pt", padding=True,
                           truncation=True, max_length=77).to(self.device)
-        f = self.model.get_text_features(**batch)
+        f = _pool(self.model.get_text_features(**batch))
         return torch.nn.functional.normalize(f, dim=-1)
 
     def encode_text(self, text: str) -> torch.Tensor:

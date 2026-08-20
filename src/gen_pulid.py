@@ -106,11 +106,12 @@ def main():
             )
             img = result[0] if isinstance(result, (tuple, list)) else result
             tmp = out / (cell_to_file(r.cell) + ".part")
-            img.save(tmp)
+            img.save(tmp, format="PNG")
             tmp.rename(out / cell_to_file(r.cell))
             status = "ok"
         except Exception as e:                 # noqa: BLE001
             status = f"error:{type(e).__name__}:{str(e)[:80]}"
+            (out / (cell_to_file(r.cell) + ".part")).unlink(missing_ok=True)
             print(f"  [{r.cell}] {status}", flush=True)
         log.add(r.cell, status, time.time() - t)
         if n % 25 == 0:

@@ -25,10 +25,40 @@ pickscore:
     the discrepancy rather than rescaling to match.
 
 face_masking_index:
-  formula: "clip_cos(background_crop, style_phrase) - clip_cos(face_crop, style_phrase)"
+  # Two forms, both positive when the face resisted stylisation.
+  fmi_style: "clip(background, style_phrase) - clip(face, style_phrase)"
+  fmi_photo: "clip(face, photo_phrase) - clip(background, photo_phrase)"
+  photo_phrase: "a natural colour photograph"
+  primary: fmi_photo
+  rationale: >
+    Measured locally on constructed controls: an NPR-stylised image moved CLIP's
+    "a natural colour photograph" score by -0.0163 but "an oil painting" by only
+    +0.0015. Losing photorealism is roughly ten times easier for CLIP to detect
+    than acquiring a named painterly style, so fmi_photo is the primary form and
+    fmi_style is reported alongside it.
+
+  reporting_form: paired_difference_vs_photoreal_control
+  CRITICAL: >
+    Absolute FMI is NOT interpretable. Face and background crops differ in
+    content, and that alone shifts the score: with no stylisation anywhere, a
+    face crop scored 0.2233 against "an oil painting" versus 0.2148 for a
+    background crop - an 0.0085 offset comparable to the effect size being
+    measured. Only the difference against the photoreal control for the same
+    identity, base prompt and seed cancels this bias. Never report a raw FMI
+    mean.
+
   face_dilate_factor: 1.2
   background: equal_area_face_free_box_farthest_from_face
   undefined_when: [face_dominates_frame, no_background_region, no_face]
+
   validation:
-    - "photoreal control condition should sit near zero for both methods"
-    - "hand-made composite (photoreal face on stylised body) should be strongly positive"
+    status: PASSED locally on constructed controls, 20 Aug 2026
+    command: python tests/test_fmi_control.py
+    result:
+      masked_minus_photoreal: +0.0077     # photoreal face on stylised background
+      blended_minus_photoreal: -0.0182    # both stylised
+      separation: +0.0259
+    caveat: >
+      Synthetic NPR stylisation is a weak proxy for a diffusion model's oil
+      painting. This confirms direction and sign only. Re-run the same control
+      on real generated images before quoting any effect size.

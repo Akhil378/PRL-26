@@ -2,13 +2,20 @@
 #SBATCH --job-name=infu-gen
 #SBATCH --partition=a100
 #SBATCH --gres=gpu:a100:1
-#SBATCH --time=24:00:00
-#SBATCH --array=0-3
+#SBATCH --time=02:19:00
+#SBATCH --array=0-7
 #SBATCH --output=logs/%x_%A_%a.out
 #SBATCH --error=logs/%x_%A_%a.err
 
-# Part 1 generation, InfU. Four shards of ~375 images.
-# Resubmitting after a timeout is safe: finished cells are skipped on startup.
+# Part 1 generation, InfU.
+#
+# Shard count and walltime come from tools/plan_shards.py, run with the
+# s/image MEASURED by slurm/smoke.sbatch. Do not request 24:00:00 out of
+# caution: SLURM backfill only slots a job into a gap at least as long as
+# the request, so a 24 h ask waits for a 24 h gap while a ~2 h ask drops
+# into the short gaps that actually exist on a busy cluster.
+#
+# Resubmitting after a timeout is safe: finished cells are skipped.
 
 set -euo pipefail
 module load python/3.12-conda
@@ -26,4 +33,4 @@ srun python src/gen_infu.py \
   --insightface-root "$INSIGHTFACE_HOME/models" \
   --model-version aes_stage2 \
   --quantize-8bit \
-  --shard "$SLURM_ARRAY_TASK_ID" --num-shards 4
+  --shard "$SLURM_ARRAY_TASK_ID" --num-shards 8
