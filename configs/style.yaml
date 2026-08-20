@@ -1,0 +1,30 @@
+# Part 2 design. The controls are not optional: without the photoreal condition
+# and the metric calibration run, any ID Loss change under stylisation cannot be
+# separated from ArcFace's own degradation on non-photographic images.
+
+grid:
+  base_prompts: 36        # stratified subset of the 200, balanced by gender and length
+  styles: [photoreal, oil_painting, render_3d, watercolour]
+  identities: 8           # part2-flagged subset, 4F/4M
+  cells_per_method: 576
+  images_total: 1152      # ~9.6 GPU-h at 30 s/img
+
+sweep:
+  purpose: "trace a trade-off curve rather than compare two points"
+  infu:  {infusenet_conditioning_scale: [0.6, 0.8, 1.0]}
+  pulid: {id_weight: [0.6, 0.8, 1.0]}
+  slice: {base_prompts: 12, identities: 4}   # 1.0 already covered by the main grid
+
+calibration_control:
+  purpose: "establish the ID Loss floor caused by ArcFace's own domain shift"
+  method: "stylise the reference photographs themselves via FLUX img2img"
+  grid: {references: 8, styles: 4, strengths: [0.3, 0.5, 0.7]}
+  images: 96
+  reporting: "every Part 2 ID Loss is quoted relative to this floor"
+
+statistics:
+  design: paired_within_cell
+  delta: "metric(styled) - metric(photoreal), same identity, base prompt and seed"
+  test: wilcoxon_signed_rank
+  interval: bootstrap_95
+  correction: holm

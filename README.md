@@ -29,10 +29,21 @@ Generated images and score tables live on `$WORK`, never in this repository.
 - [x] Part 2 style grid â€” 36 base prompts x 4 conditions, 576 cells/method
 - [x] Manifest builder with derived, paired seeds
 - [ ] Identity set curated (15 CC0 portraits, contamination-free)
-- [ ] Generation runners
-- [ ] Metric harness
+- [x] Generation runners (InfU + PuLID), sharded and resumable
+- [x] Metric harness — ID Loss x2 recognisers, CLIPScore, PickScore, FMI
+- [x] SLURM scripts and pre-registered configs
+- [x] Local test suite (crop geometry, sharding, resume) — 31 checks passing
+- [ ] Identity set curated (15 CC0 portraits, contamination-free)
+- [ ] Smoke test + timing calibration on A100
 - [ ] Part 1 run
 - [ ] Part 2 run
+
+## Tests
+
+```bash
+python tests/test_crops.py    # FMI crop geometry
+python tests/test_runner.py   # shard selection and resume
+```
 
 ## Rebuilding the benchmark
 

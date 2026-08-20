@@ -1,0 +1,19 @@
+name: metrics
+# Deliberately separate from the generation environments so scoring never has to
+# satisfy a diffusion library's pins, and can run on a cheap GPU in parallel.
+channels: [conda-forge]
+dependencies:
+  - python=3.11
+  - pip
+  - pip:
+    - torch
+    - torchvision
+    - transformers>=4.48
+    - insightface==0.7.3
+    - onnxruntime-gpu
+    - opencv-python
+    - pillow
+    - pandas
+    - pyarrow
+    - scipy
+    - matplotlib

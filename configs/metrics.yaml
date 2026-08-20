@@ -1,0 +1,34 @@
+# Metric definitions, pre-registered so the scale cannot be tuned to fit Table 1.
+
+id_loss:
+  formula: "1 - cosine(ArcFace(generated), ArcFace(reference))"
+  primary: antelopev2     # same encoder both methods condition on; comparable to the paper
+  holdout: buffalo_l      # held-out recogniser; any claim must survive this too
+  detection_failure: exclude_and_report
+  note: >
+    When no face is detected the loss is undefined. Excluded rows are never
+    imputed, and face_detected rate is reported as a metric in its own right.
+
+clipscore:
+  form: raw_cosine        # NOT 2.5*max(0,cos); the paper's 0.243-0.334 range is raw
+  primary_backbone: openai/clip-vit-large-patch14
+  appendix_backbone: openai/clip-vit-base-patch32
+  text_truncation: 77     # standard; several long prompts exceed it
+
+pickscore:
+  model: yuvalkirstain/PickScore_v1
+  processor: laion/CLIP-ViT-H-14-laion2B-s32B-b79K
+  reported_as: raw_and_over_100
+  note: >
+    The paper's 0.204-0.221 corresponds to raw PickScore (~20-22) divided by 100.
+    Verify on the first scored batch; if raw values do not land near 20, report
+    the discrepancy rather than rescaling to match.
+
+face_masking_index:
+  formula: "clip_cos(background_crop, style_phrase) - clip_cos(face_crop, style_phrase)"
+  face_dilate_factor: 1.2
+  background: equal_area_face_free_box_farthest_from_face
+  undefined_when: [face_dominates_frame, no_background_region, no_face]
+  validation:
+    - "photoreal control condition should sit near zero for both methods"
+    - "hand-made composite (photoreal face on stylised body) should be strongly positive"

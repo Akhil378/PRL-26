@@ -1,0 +1,26 @@
+# Pre-registered settings for Part 1. Fixed before generation begins; any change
+# after images exist invalidates them and must be recorded in the report.
+
+generation:
+  width: 864              # InfUFluxPipeline defaults, i.e. the paper's setting
+  height: 1152
+  num_steps: 30
+  guidance_scale: 3.5
+  infusenet_conditioning_scale: 1.0
+  infusenet_guidance_start: 0.0
+  infusenet_guidance_end: 1.0
+
+memory_profile:
+  # Chosen in Phase 1 from measured throughput, then never mixed across runs:
+  # mixing 8-bit and bf16 would confound the comparison with a quantisation effect.
+  chosen: quantize_8bit   # one of: cpu_offload | quantize_8bit | both
+  measured_sec_per_image: null   # fill in from slurm/smoke.sbatch
+
+methods:
+  infu_aes2:  {model_version: aes_stage2}
+  pulid:      {id_weight: 1.0, id_start: 4, fp8: false, offload: true}
+  # infu_sim1 and flux_ipa are optional; see the guide's cut order.
+
+seeds:
+  rule: "sha256(f'{iid}|{base_pid}')[:8] % 2**31"
+  note: "Never modify src/manifest.py:derive_seed once generation has started."
