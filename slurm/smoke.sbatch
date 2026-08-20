@@ -9,7 +9,7 @@
 # reports median seconds per image. Run once per profile, then fix the choice.
 
 set -euo pipefail
-module load python/3.11-anaconda
+module load python/3.12-conda
 conda activate "$WORK/envs/infu"
 export HF_HOME="$WORK/hf"
 export INSIGHTFACE_HOME="$WORK/insightface"

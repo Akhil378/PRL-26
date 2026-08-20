@@ -11,7 +11,7 @@
 # Resubmitting after a timeout is safe: finished cells are skipped on startup.
 
 set -euo pipefail
-module load python/3.11-anaconda
+module load python/3.12-conda
 conda activate "$WORK/envs/infu"
 
 export HF_HOME="$WORK/hf"

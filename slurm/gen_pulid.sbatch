@@ -8,7 +8,7 @@
 #SBATCH --error=logs/%x_%A_%a.err
 
 set -euo pipefail
-module load python/3.11-anaconda
+module load python/3.12-conda
 conda activate "$WORK/envs/pulid"
 
 export HF_HOME="$WORK/hf"

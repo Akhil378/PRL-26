@@ -11,7 +11,7 @@
 #   sbatch.tinygpu --export=ALL,METHOD=infu_aes2,MANIFEST=manifest_repro slurm/score.sbatch
 
 set -euo pipefail
-module load python/3.11-anaconda
+module load python/3.12-conda
 conda activate "$WORK/envs/metrics"
 
 export HF_HOME="$WORK/hf"
