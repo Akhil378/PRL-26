@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.venv/
+results/
+*.png
+*.jpg
+!benchmark/identities/*.jpg
+*.out
+*.err
+.ipynb_checkpoints/

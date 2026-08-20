@@ -1,0 +1,17 @@
+[
+ {"iid":"id01","gender":"female","age_band":"18-30","skin_tone":"I-II","path":"benchmark/identities/id01.jpg","source":"TODO","licence":"TODO","status":"pending","part2":true},
+ {"iid":"id02","gender":"female","age_band":"18-30","skin_tone":"V-VI","path":"benchmark/identities/id02.jpg","source":"TODO","licence":"TODO","status":"pending","part2":true},
+ {"iid":"id03","gender":"female","age_band":"31-50","skin_tone":"III-IV","path":"benchmark/identities/id03.jpg","source":"TODO","licence":"TODO","status":"pending","part2":true},
+ {"iid":"id04","gender":"female","age_band":"31-50","skin_tone":"I-II","path":"benchmark/identities/id04.jpg","source":"TODO","licence":"TODO","status":"pending","part2":false},
+ {"iid":"id05","gender":"female","age_band":"31-50","skin_tone":"V-VI","path":"benchmark/identities/id05.jpg","source":"TODO","licence":"TODO","status":"pending","part2":false},
+ {"iid":"id06","gender":"female","age_band":"51+","skin_tone":"III-IV","path":"benchmark/identities/id06.jpg","source":"TODO","licence":"TODO","status":"pending","part2":true},
+ {"iid":"id07","gender":"female","age_band":"51+","skin_tone":"I-II","path":"benchmark/identities/id07.jpg","source":"TODO","licence":"TODO","status":"pending","part2":false},
+ {"iid":"id08","gender":"female","age_band":"51+","skin_tone":"V-VI","path":"benchmark/identities/id08.jpg","source":"TODO","licence":"TODO","status":"pending","part2":false},
+ {"iid":"id09","gender":"male","age_band":"18-30","skin_tone":"I-II","path":"benchmark/identities/id09.jpg","source":"TODO","licence":"TODO","status":"pending","part2":true},
+ {"iid":"id10","gender":"male","age_band":"18-30","skin_tone":"V-VI","path":"benchmark/identities/id10.jpg","source":"TODO","licence":"TODO","status":"pending","part2":true},
+ {"iid":"id11","gender":"male","age_band":"31-50","skin_tone":"III-IV","path":"benchmark/identities/id11.jpg","source":"TODO","licence":"TODO","status":"pending","part2":true},
+ {"iid":"id12","gender":"male","age_band":"31-50","skin_tone":"I-II","path":"benchmark/identities/id12.jpg","source":"TODO","licence":"TODO","status":"pending","part2":false},
+ {"iid":"id13","gender":"male","age_band":"31-50","skin_tone":"V-VI","path":"benchmark/identities/id13.jpg","source":"TODO","licence":"TODO","status":"pending","part2":false},
+ {"iid":"id14","gender":"male","age_band":"51+","skin_tone":"III-IV","path":"benchmark/identities/id14.jpg","source":"TODO","licence":"TODO","status":"pending","part2":true},
+ {"iid":"id15","gender":"male","age_band":"51+","skin_tone":"I-II","path":"benchmark/identities/id15.jpg","source":"TODO","licence":"TODO","status":"pending","part2":false}
+]

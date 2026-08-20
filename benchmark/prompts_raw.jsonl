@@ -1,0 +1,200 @@
+{"pid":"p001","text":"Blonde woman in office","gender":"female","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p002","text":"Portrait of a woman, studio lighting","gender":"female","face_size":"closeup","complexity":"plain","age_hint":"none"}
+{"pid":"p003","text":"Woman hiking on a mountain trail","gender":"female","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p004","text":"Close-up of a smiling young woman","gender":"female","face_size":"closeup","complexity":"plain","age_hint":"young"}
+{"pid":"p005","text":"Woman reading a book by the window","gender":"female","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p006","text":"Woman walking through a crowded market","gender":"female","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p007","text":"Headshot of a confident businesswoman","gender":"female","face_size":"closeup","complexity":"plain","age_hint":"none"}
+{"pid":"p008","text":"Woman holding a cup of coffee","gender":"female","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p009","text":"Woman cycling down a city street","gender":"female","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p010","text":"Woman in a red dress, plain background","gender":"female","face_size":"waist","complexity":"plain","age_hint":"none"}
+{"pid":"p011","text":"Woman painting at an easel","gender":"female","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p012","text":"Young woman dancing at a music festival","gender":"female","face_size":"full","complexity":"busy","age_hint":"young"}
+{"pid":"p013","text":"Serene portrait of an elderly woman outdoors","gender":"female","face_size":"closeup","complexity":"plain","age_hint":"senior"}
+{"pid":"p014","text":"Woman playing an acoustic guitar","gender":"female","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p015","text":"Woman waiting on a busy subway platform","gender":"female","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p016","text":"Woman with wet hair after swimming","gender":"female","face_size":"closeup","complexity":"plain","age_hint":"none"}
+{"pid":"p017","text":"Woman arranging flowers in a vase","gender":"female","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p018","text":"Woman jogging through an autumn park","gender":"female","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p019","text":"Studio portrait of a woman, soft shadows","gender":"female","face_size":"closeup","complexity":"plain","age_hint":"none"}
+{"pid":"p020","text":"Woman wearing a wide-brimmed straw hat","gender":"female","face_size":"closeup","complexity":"single_object","age_hint":"none"}
+{"pid":"p021","text":"Woman crossing a busy street at night","gender":"female","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p022","text":"Woman in a white shirt, grey backdrop","gender":"female","face_size":"waist","complexity":"plain","age_hint":"none"}
+{"pid":"p023","text":"Woman typing on a laptop","gender":"female","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p024","text":"Young woman browsing a busy bookshop","gender":"female","face_size":"full","complexity":"busy","age_hint":"young"}
+{"pid":"p025","text":"Woman laughing, natural light","gender":"female","face_size":"closeup","complexity":"plain","age_hint":"none"}
+{"pid":"p026","text":"Woman wearing noise-cancelling headphones","gender":"female","face_size":"closeup","complexity":"single_object","age_hint":"none"}
+{"pid":"p027","text":"Woman skiing down a snowy slope","gender":"female","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p028","text":"Minimal portrait of a woman, black background","gender":"female","face_size":"closeup","complexity":"plain","age_hint":"none"}
+{"pid":"p029","text":"Woman baking bread in her kitchen","gender":"female","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p030","text":"Woman photographing a city skyline","gender":"female","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p031","text":"Woman in a wool coat, neutral background","gender":"female","face_size":"waist","complexity":"plain","age_hint":"none"}
+{"pid":"p032","text":"Woman feeding a horse an apple","gender":"female","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p033","text":"Woman shopping at an outdoor flower market","gender":"female","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p034","text":"A woman in a tailored navy suit standing in a modern glass office lobby","gender":"female","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p035","text":"Close-up portrait of a woman with freckles, soft window light, shallow depth of field","gender":"female","face_size":"closeup","complexity":"plain","age_hint":"none"}
+{"pid":"p036","text":"A woman selling produce at a crowded farmers market on a bright Saturday morning","gender":"female","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p037","text":"A woman sitting alone in a quiet cafe, holding a ceramic mug","gender":"female","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p038","text":"Detailed close-up of a woman's face, dramatic side lighting, dark background","gender":"female","face_size":"closeup","complexity":"plain","age_hint":"none"}
+{"pid":"p039","text":"A woman conducting an orchestra in a packed concert hall","gender":"female","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p040","text":"A woman in running gear stretching against a stadium railing at sunrise","gender":"female","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p041","text":"Head and shoulders portrait of a woman against a seamless white backdrop","gender":"female","face_size":"closeup","complexity":"plain","age_hint":"none"}
+{"pid":"p042","text":"A woman navigating a busy airport terminal with a rolling suitcase","gender":"female","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p043","text":"A woman gardening on a balcony, potting soil on her hands","gender":"female","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p044","text":"Intimate portrait of a woman in candlelight, warm tones, minimal background","gender":"female","face_size":"closeup","complexity":"plain","age_hint":"none"}
+{"pid":"p045","text":"A woman teaching a full classroom of engaged university students","gender":"female","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p046","text":"A woman repairing a bicycle wheel in a small workshop","gender":"female","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p047","text":"A woman standing in the surf at golden hour, wind in her hair","gender":"female","face_size":"full","complexity":"plain","age_hint":"none"}
+{"pid":"p048","text":"A woman in a laboratory coat examining a sample under a microscope","gender":"female","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p049","text":"A woman crossing a crowded pedestrian scramble in a neon-lit district","gender":"female","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p050","text":"Soft-focus portrait of a woman wearing simple gold earrings","gender":"female","face_size":"closeup","complexity":"plain","age_hint":"none"}
+{"pid":"p051","text":"A woman kneading dough on a floured wooden counter","gender":"female","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p052","text":"A woman cheering among fans in a packed football stadium","gender":"female","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p053","text":"A woman leaning against a brick wall, hands in her jacket pockets","gender":"female","face_size":"waist","complexity":"plain","age_hint":"none"}
+{"pid":"p054","text":"A woman playing chess against a clock in a quiet library","gender":"female","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p055","text":"A woman guiding tourists through a bustling old town square","gender":"female","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p056","text":"Portrait of a woman looking directly at the camera, neutral expression","gender":"female","face_size":"closeup","complexity":"plain","age_hint":"none"}
+{"pid":"p057","text":"A woman sketching in a notebook at an outdoor cafe table","gender":"female","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p058","text":"A young woman skateboarding through a crowded urban plaza at dusk","gender":"female","face_size":"full","complexity":"busy","age_hint":"young"}
+{"pid":"p059","text":"Studio headshot of a woman with short cropped hair, even lighting","gender":"female","face_size":"closeup","complexity":"plain","age_hint":"none"}
+{"pid":"p060","text":"A woman tuning a violin backstage before a performance","gender":"female","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p061","text":"A woman directing traffic at a busy construction site","gender":"female","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p062","text":"A woman seated on a wooden bench, autumn leaves scattered around","gender":"female","face_size":"waist","complexity":"plain","age_hint":"none"}
+{"pid":"p063","text":"A woman decorating an elaborate cake in a professional kitchen","gender":"female","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p064","text":"A woman photographing wildlife from a crowded safari vehicle","gender":"female","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p065","text":"Close-up of a woman with rain droplets on her face","gender":"female","face_size":"closeup","complexity":"plain","age_hint":"none"}
+{"pid":"p066","text":"A woman assembling a circuit board at an electronics bench","gender":"female","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p067","text":"A woman performing on stage in front of a large audience","gender":"female","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p068","text":"A professional portrait of a woman in a charcoal blazer, photographed in a bright corporate office with floor-to-ceiling windows and a softly blurred city skyline behind her","gender":"female","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p069","text":"An intimate close-up portrait of an older woman lit by a single warm lamp, every detail of her expression rendered sharply against a deep shadowed background","gender":"female","face_size":"closeup","complexity":"plain","age_hint":"senior"}
+{"pid":"p070","text":"A cinematic wide shot of a woman standing at the edge of a crowded night market, neon signage and steam from food stalls filling the frame around her","gender":"female","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p071","text":"A woman in a linen apron carefully arranging pastries in a display case, morning light falling across the counter of a small neighbourhood bakery","gender":"female","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p072","text":"A high-resolution studio portrait of a woman against a seamless grey backdrop, three-point lighting, sharp focus on the eyes, shot on a medium format camera","gender":"female","face_size":"closeup","complexity":"plain","age_hint":"none"}
+{"pid":"p073","text":"A documentary-style photograph of a woman leading a march down a wide avenue, hundreds of people and hand-painted banners visible behind her","gender":"female","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p074","text":"A woman seated at a grand piano in an empty rehearsal hall, sheet music open, afternoon light streaming through tall arched windows","gender":"female","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p075","text":"An environmental portrait of a woman standing alone on a windswept coastal cliff, overcast sky above, her coat pulled tight against the cold","gender":"female","face_size":"full","complexity":"plain","age_hint":"none"}
+{"pid":"p076","text":"A woman working late at a cluttered architecture studio, scale models and rolled drawings surrounding her desk under a single pendant lamp","gender":"female","face_size":"waist","complexity":"busy","age_hint":"none"}
+{"pid":"p077","text":"A tightly cropped portrait of an older woman with weathered skin and clear eyes, natural light from a north-facing window, no makeup, unretouched","gender":"female","face_size":"closeup","complexity":"plain","age_hint":"senior"}
+{"pid":"p078","text":"A woman moving through a crowded train station concourse during rush hour, motion blurred commuters streaming past her in both directions","gender":"female","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p079","text":"A woman in surgical scrubs pausing in a hospital corridor, fluorescent lighting overhead, her expression tired but composed after a long shift","gender":"female","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p080","text":"A carefully composed portrait of a woman framed by a doorway, the interior dark and the exterior bright, creating a strong silhouette edge","gender":"female","face_size":"waist","complexity":"plain","age_hint":"none"}
+{"pid":"p081","text":"A woman inspecting rows of grapevines on a hillside vineyard at harvest time, workers and crates visible in the terraced rows behind her","gender":"female","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p082","text":"A woman restoring an oil painting in a conservation studio, magnifying visor lowered, tiny brushes and pigment jars arranged on the bench beside her","gender":"female","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p083","text":"An extreme close-up portrait of a woman, focus falling on her eyes, background rendered as a smooth wash of neutral colour","gender":"female","face_size":"closeup","complexity":"plain","age_hint":"none"}
+{"pid":"p084","text":"A woman standing on a scaffold painting a large mural on the side of a brick building while pedestrians pass below on the sidewalk","gender":"female","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p085","text":"A young woman sitting cross-legged on a hardwood floor surrounded by open books and scattered notes, warm afternoon light across the room","gender":"female","face_size":"waist","complexity":"single_object","age_hint":"young"}
+{"pid":"p086","text":"A formal three-quarter portrait of a woman in evening wear, photographed against a dark velvet backdrop with soft directional key lighting","gender":"female","face_size":"waist","complexity":"plain","age_hint":"none"}
+{"pid":"p087","text":"A woman untangling fishing nets on the deck of a working harbour boat, gulls overhead and other vessels crowding the dock behind her","gender":"female","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p088","text":"A woman in a glass-walled meeting room presenting to colleagues, marker in hand, diagrams filling the whiteboard behind her shoulder, late in the working day","gender":"female","face_size":"waist","complexity":"busy","age_hint":"none"}
+{"pid":"p089","text":"A quiet portrait of an elderly woman resting her chin on her hand, elbow on a wooden table, soft diffused daylight from the left","gender":"female","face_size":"closeup","complexity":"plain","age_hint":"senior"}
+{"pid":"p090","text":"A woman leading a group of hikers across a high alpine ridge, the line of walkers and distant peaks stretching behind her","gender":"female","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p091","text":"A woman potting seedlings in a humid greenhouse, condensation on the glass panels and rows of young plants receding into the background","gender":"female","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p092","text":"A striking portrait of a woman with closely cropped hair, photographed in black and white with hard side lighting and deep shadow","gender":"female","face_size":"closeup","complexity":"plain","age_hint":"none"}
+{"pid":"p093","text":"A woman working a busy espresso machine during the morning rush, steam rising and a queue of customers blurred behind the counter","gender":"female","face_size":"waist","complexity":"busy","age_hint":"none"}
+{"pid":"p094","text":"An older woman standing in an empty theatre auditorium looking up at the lighting rig, rows of red velvet seats extending into darkness","gender":"female","face_size":"full","complexity":"plain","age_hint":"senior"}
+{"pid":"p095","text":"A woman examining architectural blueprints spread across the hood of a truck at a construction site, hard hat pushed back on her head","gender":"female","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p096","text":"A candid portrait of a woman mid-laugh at a crowded dinner party, warm interior lighting and other guests softly out of focus","gender":"female","face_size":"closeup","complexity":"busy","age_hint":"none"}
+{"pid":"p097","text":"A woman rowing a single scull on flat water at dawn, mist on the river surface and a bridge arching in the far distance","gender":"female","face_size":"full","complexity":"plain","age_hint":"none"}
+{"pid":"p098","text":"A woman calibrating a large telescope inside an observatory dome, the instrument towering above her in the dim red safety lighting","gender":"female","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p099","text":"A woman navigating a crowded costume parade in narrow cobbled streets, elaborate masks and streamers filling the frame around her on a warm summer evening","gender":"female","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p100","text":"A composed studio portrait of a woman wearing a simple black turtleneck, lit softly from above, plain mid-grey background, sharp detail","gender":"female","face_size":"closeup","complexity":"plain","age_hint":"none"}
+{"pid":"p101","text":"Old man with beard","gender":"male","face_size":"closeup","complexity":"plain","age_hint":"senior"}
+{"pid":"p102","text":"Man working at a desk","gender":"male","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p103","text":"Man crossing a busy intersection","gender":"male","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p104","text":"Headshot of a young man","gender":"male","face_size":"closeup","complexity":"plain","age_hint":"young"}
+{"pid":"p105","text":"Man holding a vinyl record","gender":"male","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p106","text":"Man walking through a crowded bazaar","gender":"male","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p107","text":"Portrait of a bearded man, studio light","gender":"male","face_size":"closeup","complexity":"plain","age_hint":"none"}
+{"pid":"p108","text":"Man repairing a wristwatch","gender":"male","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p109","text":"Man surfing a breaking wave","gender":"male","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p110","text":"Man in a grey suit, plain background","gender":"male","face_size":"waist","complexity":"plain","age_hint":"none"}
+{"pid":"p111","text":"Man playing a grand piano","gender":"male","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p112","text":"Young man cheering in a packed stadium","gender":"male","face_size":"full","complexity":"busy","age_hint":"young"}
+{"pid":"p113","text":"Close-up of an elderly man's face","gender":"male","face_size":"closeup","complexity":"plain","age_hint":"senior"}
+{"pid":"p114","text":"Man sharpening a kitchen knife","gender":"male","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p115","text":"Man boarding a crowded commuter train","gender":"male","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p116","text":"Man with wet hair in the rain","gender":"male","face_size":"closeup","complexity":"plain","age_hint":"none"}
+{"pid":"p117","text":"Man sketching on a drafting table","gender":"male","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p118","text":"Man running a city marathon","gender":"male","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p119","text":"Studio portrait of a man, soft shadows","gender":"male","face_size":"closeup","complexity":"plain","age_hint":"none"}
+{"pid":"p120","text":"Man wearing round wire-framed glasses","gender":"male","face_size":"closeup","complexity":"single_object","age_hint":"none"}
+{"pid":"p121","text":"Man hailing a taxi at night","gender":"male","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p122","text":"Man in a knitted sweater, neutral backdrop","gender":"male","face_size":"waist","complexity":"plain","age_hint":"none"}
+{"pid":"p123","text":"Man tuning a vintage radio","gender":"male","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p124","text":"Young man browsing a crowded record fair","gender":"male","face_size":"full","complexity":"busy","age_hint":"young"}
+{"pid":"p125","text":"Man laughing, natural window light","gender":"male","face_size":"closeup","complexity":"plain","age_hint":"none"}
+{"pid":"p126","text":"Man wearing a climbing helmet","gender":"male","face_size":"closeup","complexity":"single_object","age_hint":"none"}
+{"pid":"p127","text":"Man kayaking through river rapids","gender":"male","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p128","text":"Minimal portrait of a man, black background","gender":"male","face_size":"closeup","complexity":"plain","age_hint":"none"}
+{"pid":"p129","text":"Man grilling vegetables outdoors","gender":"male","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p130","text":"Man photographing a busy street parade","gender":"male","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p131","text":"Man in a denim jacket, grey wall","gender":"male","face_size":"waist","complexity":"plain","age_hint":"none"}
+{"pid":"p132","text":"Man feeding pigeons in a square","gender":"male","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p133","text":"Man weaving through a crowded night market","gender":"male","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p134","text":"A man in a tailored charcoal suit standing in a hotel lobby with marble floors","gender":"male","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p135","text":"Close-up portrait of an older man with a greying beard, soft directional light, dark background","gender":"male","face_size":"closeup","complexity":"plain","age_hint":"senior"}
+{"pid":"p136","text":"A man selling fish at a crowded harbour market early in the morning","gender":"male","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p137","text":"A man sitting alone at a diner counter with a cup of coffee","gender":"male","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p138","text":"Detailed close-up of a man's face, strong side lighting, deep shadows","gender":"male","face_size":"closeup","complexity":"plain","age_hint":"none"}
+{"pid":"p139","text":"A man performing with his band in a packed basement venue","gender":"male","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p140","text":"A man in cycling kit checking his bike against a stone wall","gender":"male","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p141","text":"Head and shoulders portrait of a man against a seamless white backdrop","gender":"male","face_size":"closeup","complexity":"plain","age_hint":"none"}
+{"pid":"p142","text":"A man carrying luggage through a crowded railway concourse","gender":"male","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p143","text":"A man planting a young tree in a suburban garden","gender":"male","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p144","text":"Warm portrait of a man in lamplight, minimal background, gentle contrast","gender":"male","face_size":"closeup","complexity":"plain","age_hint":"none"}
+{"pid":"p145","text":"A man lecturing to a full auditorium of attentive students","gender":"male","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p146","text":"A man restoring a wooden chair in a small carpentry workshop","gender":"male","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p147","text":"A man standing on a rocky shoreline as waves break behind him","gender":"male","face_size":"full","complexity":"plain","age_hint":"none"}
+{"pid":"p148","text":"A man in a white coat adjusting equipment in a research laboratory","gender":"male","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p149","text":"A man walking through a crowded festival at dusk, lanterns overhead","gender":"male","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p150","text":"Soft-focus portrait of a man wearing a simple linen shirt","gender":"male","face_size":"closeup","complexity":"plain","age_hint":"none"}
+{"pid":"p151","text":"A man rolling fresh pasta on a floured wooden board","gender":"male","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p152","text":"A man watching a match among thousands of cheering supporters","gender":"male","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p153","text":"A man leaning against a weathered fence, hands in his pockets","gender":"male","face_size":"waist","complexity":"plain","age_hint":"none"}
+{"pid":"p154","text":"A man playing chess in a quiet park pavilion","gender":"male","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p155","text":"A man guiding a walking tour through a crowded historic quarter","gender":"male","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p156","text":"Portrait of a man looking directly into the lens, neutral expression","gender":"male","face_size":"closeup","complexity":"plain","age_hint":"none"}
+{"pid":"p157","text":"A man writing in a notebook at a small cafe table","gender":"male","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p158","text":"A young man cycling through a crowded city plaza at midday","gender":"male","face_size":"full","complexity":"busy","age_hint":"young"}
+{"pid":"p159","text":"Studio headshot of a man with a shaved head, even lighting","gender":"male","face_size":"closeup","complexity":"plain","age_hint":"none"}
+{"pid":"p160","text":"A man rosining a cello bow backstage before a recital","gender":"male","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p161","text":"A man supervising a busy loading dock during a shift change","gender":"male","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p162","text":"A man seated on a park bench, newspaper folded beside him","gender":"male","face_size":"waist","complexity":"plain","age_hint":"none"}
+{"pid":"p163","text":"A man plating a dish in a professional restaurant kitchen","gender":"male","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p164","text":"A man photographing birds from a crowded observation platform","gender":"male","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p165","text":"Close-up of a man with rain running down his face","gender":"male","face_size":"closeup","complexity":"plain","age_hint":"none"}
+{"pid":"p166","text":"A man soldering components at a cluttered electronics bench","gender":"male","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p167","text":"A man performing stand-up comedy in front of a full room","gender":"male","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p168","text":"A professional portrait of a man in a well-cut navy suit, photographed in a bright corporate atrium with a softly blurred glass staircase behind him","gender":"male","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p169","text":"An intimate close-up of a man lit by a single warm lamp, the texture of his skin and beard rendered in fine detail against darkness","gender":"male","face_size":"closeup","complexity":"plain","age_hint":"none"}
+{"pid":"p170","text":"A cinematic wide shot of a man standing at the edge of a crowded night market, neon signage and drifting steam filling the frame","gender":"male","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p171","text":"A man in a flour-dusted apron sliding a tray of loaves into a stone oven, early morning light across the bakery counter","gender":"male","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p172","text":"A high-resolution studio portrait of a man against a seamless grey backdrop, three-point lighting, tack-sharp focus on the eyes, medium format","gender":"male","face_size":"closeup","complexity":"plain","age_hint":"none"}
+{"pid":"p173","text":"A documentary photograph of a man addressing a large crowd from a temporary stage, banners and raised hands filling the background","gender":"male","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p174","text":"A man seated at an upright piano in an empty rehearsal room, sheet music open, late afternoon light through tall windows","gender":"male","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p175","text":"An environmental portrait of a man standing alone on a windswept moor under a heavy overcast sky, coat collar turned up","gender":"male","face_size":"full","complexity":"plain","age_hint":"none"}
+{"pid":"p176","text":"A man working late in a cluttered architecture studio, scale models and rolled drawings crowding the desk beneath a single lamp","gender":"male","face_size":"waist","complexity":"busy","age_hint":"none"}
+{"pid":"p177","text":"A tightly cropped portrait of an older man with deeply weathered skin and pale eyes, north window light, unretouched and honest","gender":"male","face_size":"closeup","complexity":"plain","age_hint":"senior"}
+{"pid":"p178","text":"A man moving through a packed station concourse at rush hour, blurred commuters streaming past him in both directions under high vaulted glass","gender":"male","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p179","text":"A man in surgical scrubs leaning against a hospital corridor wall, fluorescent light overhead, visibly tired after a long night shift, mask pulled down","gender":"male","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p180","text":"A carefully composed portrait of a man framed in a bright doorway against a dark interior, strong rim light along his profile","gender":"male","face_size":"waist","complexity":"plain","age_hint":"none"}
+{"pid":"p181","text":"A man inspecting rows of vines on a terraced hillside at harvest, pickers and crates scattered through the slope behind him","gender":"male","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p182","text":"A man restoring a violin at a luthier's bench, tiny clamps and gouges arranged in rows on the worn wooden surface","gender":"male","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p183","text":"An extreme close-up of a man's face with focus resting on the eyes, the background dissolved into smooth neutral tone with no visible detail","gender":"male","face_size":"closeup","complexity":"plain","age_hint":"none"}
+{"pid":"p184","text":"A man on a scaffold painting a mural across the side of a brick warehouse while traffic moves along the street below","gender":"male","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p185","text":"A young man sitting cross-legged on a wooden floor surrounded by open books and loose pages, warm light spilling across the room","gender":"male","face_size":"waist","complexity":"single_object","age_hint":"young"}
+{"pid":"p186","text":"A formal three-quarter portrait of a man in black tie, photographed against dark velvet with soft directional key lighting and a subtle rim highlight","gender":"male","face_size":"waist","complexity":"plain","age_hint":"none"}
+{"pid":"p187","text":"A man hauling nets on the deck of a working fishing boat, gulls wheeling overhead and other vessels crowding the harbour","gender":"male","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p188","text":"A man presenting to colleagues in a glass-walled meeting room, marker in hand and diagrams covering the whiteboard behind him, late in the working day","gender":"male","face_size":"waist","complexity":"busy","age_hint":"none"}
+{"pid":"p189","text":"A quiet portrait of an elderly man resting his chin on his fist, elbow on a scarred wooden table, soft daylight from the left","gender":"male","face_size":"closeup","complexity":"plain","age_hint":"senior"}
+{"pid":"p190","text":"A man leading a roped party across a high alpine ridge, the line of climbers and distant summits receding behind him","gender":"male","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p191","text":"A man transplanting seedlings in a humid greenhouse, condensation beading on the glass and rows of young plants stretching away into the far end","gender":"male","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p192","text":"A striking black and white portrait of a man with close-cropped hair, hard side lighting carving deep shadow across his face","gender":"male","face_size":"closeup","complexity":"plain","age_hint":"none"}
+{"pid":"p193","text":"A man working the espresso machine through the morning rush, steam rising as a queue of customers blurs behind the counter","gender":"male","face_size":"waist","complexity":"busy","age_hint":"none"}
+{"pid":"p194","text":"A man standing alone in an empty theatre looking up toward the lighting rig, rows of seats receding into the dark","gender":"male","face_size":"full","complexity":"plain","age_hint":"none"}
+{"pid":"p195","text":"A man studying blueprints spread across the tailgate of a truck at a construction site, hard hat pushed back from his forehead","gender":"male","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p196","text":"A candid shot of a man mid-laugh at a crowded dinner table, warm interior light and other guests softly out of focus","gender":"male","face_size":"closeup","complexity":"busy","age_hint":"none"}
+{"pid":"p197","text":"A man rowing a single scull across flat water at dawn, mist lying on the river and a bridge arching in the distance","gender":"male","face_size":"full","complexity":"plain","age_hint":"none"}
+{"pid":"p198","text":"A man calibrating a large telescope beneath an observatory dome, the instrument looming above him in dim red safety lighting long after midnight","gender":"male","face_size":"waist","complexity":"single_object","age_hint":"none"}
+{"pid":"p199","text":"A man threading through a crowded carnival procession in narrow cobbled streets, masks and streamers crowding the frame on a warm summer evening","gender":"male","face_size":"full","complexity":"busy","age_hint":"none"}
+{"pid":"p200","text":"A composed studio portrait of a man in a plain black turtleneck, lit softly from above against a mid-grey background, fine detail throughout","gender":"male","face_size":"closeup","complexity":"plain","age_hint":"none"}
