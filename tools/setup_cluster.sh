@@ -145,14 +145,12 @@ echo "=== 5. facexlib weights ==="
 # a .pth from GitHub the first time it runs. Compute nodes are offline, so that
 # download times out and takes the job with it. Stage the weights now, on the
 # frontend, where there is internet.
-# parsing_bisenet.pth is PuLID's face-parsing model: pipeline_flux.py calls
-# init_parsing_model(model_name='bisenet'), which is a DIFFERENT file from the
-# parsenet one InfU pulls in. Missing it stalls PuLID on the offline node.
+# PuLID additionally needs parsing_bisenet.pth; that one is staged by
+# tools/stage_pulid.py in step 6, which owns everything PuLID-specific.
 FACEX_URLS="
 https://github.com/xinntao/facexlib/releases/download/v0.1.0/recognition_arcface_ir_se50.pth
 https://github.com/xinntao/facexlib/releases/download/v0.1.0/detection_Resnet50_Final.pth
 https://github.com/xinntao/facexlib/releases/download/v0.2.2/parsing_parsenet.pth
-https://github.com/xinntao/facexlib/releases/download/v0.2.0/parsing_bisenet.pth
 "
 for env in infu pulid; do
   # Ask the package where it lives rather than guessing a path depth: the dir is

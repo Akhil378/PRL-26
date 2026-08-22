@@ -169,7 +169,7 @@ def main() -> int:
     log("=== 6d. antelopev2 (PuLID's copy) ===")
     # PuLID resolves this as ./models/antelopev2 via FaceAnalysis(root='.') and
     # a literal 'models/antelopev2/glintr100.onnx'. It is a separate copy from
-    # the one InfU conditions on; 6f checks whether the bytes actually differ.
+    # the one InfU conditions on; 6h checks whether the bytes actually differ.
     ante = models / "antelopev2"
     need = ["glintr100.onnx", "scrfd_10g_bnkps.onnx", "1k3d68.onnx",
             "2d106det.onnx", "genderage.onnx"]
@@ -211,8 +211,31 @@ def main() -> int:
     else:
         log(f"  ok: {EVA_FILE}  {size_of(Path(got))}")
 
+    # ---- facexlib parsing model --------------------------------------------
+    log("=== 6g. facexlib bisenet ===")
+    # pipeline_flux.py calls init_parsing_model(model_name='bisenet'), which is a
+    # DIFFERENT file from the parsenet weight InfU pulls in, and facexlib fetches
+    # it lazily from GitHub on first use -- which never completes offline.
+    import urllib.request
+
+    import facexlib
+    wdir = Path(facexlib.__file__).parent / "weights"
+    wdir.mkdir(parents=True, exist_ok=True)
+    bise = wdir / "parsing_bisenet.pth"
+    if bise.exists() and bise.stat().st_size > 0:
+        log(f"  ok: parsing_bisenet.pth  {size_of(bise)}")
+    else:
+        url = ("https://github.com/xinntao/facexlib/releases/download/"
+               "v0.2.0/parsing_bisenet.pth")
+        got = retry("parsing_bisenet.pth",
+                    lambda: urllib.request.urlretrieve(url, bise))
+        if got is None or not bise.exists():
+            missing.append("parsing_bisenet.pth")
+        else:
+            log(f"  fetched: parsing_bisenet.pth  {size_of(bise)}")
+
     # ---- confound check -----------------------------------------------------
-    log("=== 6g. antelopev2 provenance check (InfU vs PuLID) ===")
+    log("=== 6h. antelopev2 provenance check (InfU vs PuLID) ===")
     # Both methods condition on an ArcFace embedding, but each ships its own copy
     # of the weights. If the bytes differ, "InfU vs PuLID" is partly a
     # recogniser-version comparison, which would be a confound worth reporting.

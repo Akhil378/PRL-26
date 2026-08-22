@@ -51,7 +51,13 @@ def build_args():
     ap.add_argument("--offload", action="store_true")
     ap.add_argument("--fp8", action="store_true",
                     help="Degrades facial detail; prefer bf16+offload on A100.")
-    ap.add_argument("--onnx-provider", default="gpu", choices=["gpu", "cpu"])
+    # MEASURED: the pulid env has onnxruntime and onnxruntime-gpu both at 1.29.0,
+    # and the CPU-only wheel wins -- get_available_providers() returns only
+    # Azure and CPU. Requesting CUDA does NOT raise; onnxruntime warns and
+    # falls back, so "gpu" here would record a provider we are not using.
+    # Default to the truth. InfU also runs insightface on CPU, so this keeps the
+    # two methods consistent rather than introducing an asymmetry.
+    ap.add_argument("--onnx-provider", default="cpu", choices=["gpu", "cpu"])
     ap.add_argument("--width", type=int, default=864)
     ap.add_argument("--height", type=int, default=1152)
     ap.add_argument("--num-steps", type=int, default=30)
