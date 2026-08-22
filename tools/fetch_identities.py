@@ -114,29 +114,67 @@ def report(rows, edges):
         print(f"    {k[0]:<8} {k[1]:<10} {c[k]}")
 
 
-def select(rows, gender: str, n: int, rotate: int):
-    """Round-robin across (ethnicity, age band), rotating the start.
+MIN_GROUP = 4      # ethnicity groups smaller than this cannot support a subgroup stat
 
-    Rotation matters: taking the first n strata from a sorted list silently
-    collapses the selection onto whichever category sorts first, which is how
-    an earlier stratified sampler in this repo produced 15F/9M when asked for
-    12/12.
+
+def allocate(available: dict, n: int) -> dict:
+    """Split n as evenly as possible across groups, capped by availability.
+
+    Equal-ish cells, not population proportions. The source is a convenience
+    sample from London that is 68% white; mirroring that would leave the other
+    groups at n=1-2 and unable to support the per-subgroup breakdown this
+    benchmark exists to provide. Over-sampling the smaller groups is the point.
+    """
+    groups = sorted(available)
+    quota = {g: 0 for g in groups}
+    left = n
+    while left > 0:
+        openers = [g for g in groups if quota[g] < available[g]]
+        if not openers:
+            raise SystemExit(f"cannot place {left} more: pool exhausted")
+        for g in openers:
+            if left == 0:
+                break
+            quota[g] += 1
+            left -= 1
+    return quota
+
+
+def select(rows, gender: str, n: int, rotate: int):
+    """Quota by ethnicity first, then spread across age bands within each.
+
+    Ethnicity is balanced EXPLICITLY rather than left to a round-robin over
+    (ethnicity, band) strata. That earlier approach picks n of ~12 strata and so
+    silently drops whichever ethnicity sorts last -- it produced 1 white face
+    out of 15 from a 68%-white source. The same failure mode cost this repo a
+    15F/9M prompt split once already.
     """
     pool = defaultdict(list)
-    for r in sorted(rows, key=lambda x: x["face_id"]):
+    for r in sorted(rows, key=lambda x: (x["band"], x["face_id"])):
         if r["gender"] == gender:
-            pool[(r["eth"], r["band"])].append(r)
-    keys = sorted(pool)
-    if not keys:
-        raise SystemExit(f"no candidates for gender={gender}")
-    chosen, i = [], 0
-    while len(chosen) < n:
-        if i > len(keys) * 50:
-            raise SystemExit(f"only found {len(chosen)} of {n} for {gender}")
-        k = keys[(i + rotate) % len(keys)]
-        if pool[k]:
-            chosen.append(pool[k].pop(0))
-        i += 1
+            pool[r["eth"]].append(r)
+
+    usable = {e: v for e, v in pool.items() if len(v) >= MIN_GROUP}
+    dropped = {e: len(v) for e, v in pool.items() if e not in usable}
+    if dropped:
+        print(f"  {gender}: excluding groups too small for a subgroup stat: {dropped}")
+
+    quota = allocate({e: len(v) for e, v in usable.items()}, n)
+    chosen = []
+    for e in sorted(usable):
+        cands = usable[e]
+        by_band = defaultdict(list)
+        for r in cands:
+            by_band[r["band"]].append(r)
+        bands = sorted(by_band)
+        i = rotate
+        while len([c for c in chosen if c["eth"] == e]) < quota[e]:
+            b = bands[i % len(bands)]
+            if by_band[b]:
+                chosen.append(by_band[b].pop(0))
+            i += 1
+            if i > len(bands) * 50:
+                raise SystemExit(f"cannot fill quota for {gender}/{e}")
     return chosen
 
 
