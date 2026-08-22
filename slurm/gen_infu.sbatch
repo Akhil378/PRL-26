@@ -2,7 +2,7 @@
 #SBATCH --job-name=infu-gen
 #SBATCH --partition=a100
 #SBATCH --gres=gpu:a100:1
-#SBATCH --time=02:19:00
+#SBATCH --time=01:57:00
 #SBATCH --array=0-7
 #SBATCH --output=logs/%x_%A_%a.out
 #SBATCH --error=logs/%x_%A_%a.err

@@ -11,10 +11,22 @@ generation:
   infusenet_guidance_end: 1.0
 
 memory_profile:
-  # Chosen in Phase 1 from measured throughput, then never mixed across runs:
-  # mixing 8-bit and bf16 would confound the comparison with a quantisation effect.
-  chosen: quantize_8bit   # one of: cpu_offload | quantize_8bit | both
-  measured_sec_per_image: null   # fill in from slurm/smoke.sbatch
+  # MEASURED 22 Aug 2026, A100 40GB, 20 images each, 864x1152 / 30 steps,
+  # real manifest and curated reference portraits (jobs 1789377 / 1789378).
+  chosen: quantize_8bit
+  measured_sec_per_image: 25.0
+
+  comparison:
+    quantize_8bit: {median_s: 25.0, mean_s: 25.0, min_s: 24.5, max_s: 25.7, load_s: 92}
+    cpu_offload:   {median_s: 37.0, mean_s: 40.3, min_s: 35.9, max_s: 87.7, load_s: 25}
+  notes: >
+    8-bit is 1.48x faster per image and far more consistent (+/-0.6 s across 20
+    images versus a 52 s spread for offload, whose 87.7 s maximum is first-image
+    CUDA warmup -- which is why the median is the honest statistic here). The
+    67 s extra load cost amortises to under 2% over a 188-image shard. This
+    profile is now fixed for EVERY generation in the project: mixing 8-bit and
+    bf16 across runs would confound the results with a quantisation effect.
+    Worth reporting -- the paper gives no deployment cost figures at all.
 
 methods:
   infu_aes2:  {model_version: aes_stage2}
@@ -24,6 +36,13 @@ methods:
 seeds:
   rule: "sha256(f'{iid}|{base_pid}')[:8] % 2**31"
   note: "Never modify src/manifest.py:derive_seed once generation has started."
+
+budget:
+  # at the measured 25.0 s/img
+  part1_per_method_gpu_h: 10.4       # 1500 cells
+  part1_both_methods_gpu_h: 20.8
+  part2_per_method_gpu_h: 4.0        # 576 cells
+  part2_both_methods_gpu_h: 8.0
 
 cluster:
   # measured on tinyx, 20 Aug 2026 - do not re-guess these
