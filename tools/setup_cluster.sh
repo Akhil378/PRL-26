@@ -12,7 +12,10 @@ export PRL="$WORK/prl26"
 export HF_HOME="$WORK/hf"
 export HUGGINGFACE_HUB_CACHE="$WORK/hf/hub"
 export INSIGHTFACE_HOME="$WORK/insightface"
-mkdir -p "$PRL" "$HF_HOME" "$INSIGHTFACE_HOME" "$WORK/envs" logs
+# conda's default package cache is /apps/python/3.12-conda/pkgs, which is
+# read-only. Without this, every `conda create` dies with NoWritablePkgsDirError.
+export CONDA_PKGS_DIRS="$WORK/conda/pkgs"
+mkdir -p "$PRL" "$HF_HOME" "$INSIGHTFACE_HOME" "$WORK/envs" "$CONDA_PKGS_DIRS" logs
 
 echo "=== 0. persist the cache locations ==="
 # ~60 GB of weights; $HOME is 100 GB and also holds the conda envs
@@ -23,7 +26,15 @@ export PRL="$WORK/prl26"
 export HF_HOME="$WORK/hf"
 export HUGGINGFACE_HUB_CACHE="$WORK/hf/hub"
 export INSIGHTFACE_HOME="$WORK/insightface"
+export CONDA_PKGS_DIRS="$WORK/conda/pkgs"   # system pkgs dir is read-only
+export PATH="$WORK/envs/tools/bin:$PATH"
 RC
+
+# Login shells read .bash_profile, not .bashrc, and "#!/bin/bash -l" batch
+# scripts are login shells. Bridge them so both see the same environment.
+[ -f ~/.bash_profile ] || cat > ~/.bash_profile << "BP"
+[ -f ~/.bashrc ] && . ~/.bashrc
+BP
 
 echo "=== 1. upstream repositories ==="
 [ -d "$PRL/InfiniteYou" ] || git clone --depth 1 https://github.com/bytedance/InfiniteYou.git "$PRL/InfiniteYou"
@@ -32,6 +43,12 @@ echo "=== 1. upstream repositories ==="
 module load python/3.12-conda
 
 echo "=== 2. environments ==="
+# small frontend env: huggingface-cli for the gated login, available before the
+# heavy envs exist
+if [ ! -d "$WORK/envs/tools" ]; then
+  conda create -y -q -p "$WORK/envs/tools" python=3.12
+  conda run -p "$WORK/envs/tools" pip install -q "huggingface_hub==0.28.1"
+fi
 if [ ! -d "$WORK/envs/infu" ]; then
   conda create -y -p "$WORK/envs/infu" python=3.11
   conda run -p "$WORK/envs/infu" pip install -r "$PRL/InfiniteYou/requirements.txt"
