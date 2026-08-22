@@ -6,8 +6,14 @@
 #SBATCH --array=0-7
 #SBATCH --output=logs/%x_%A_%a.out
 #SBATCH --error=logs/%x_%A_%a.err
+#SBATCH --export=NONE
 
-set -euo pipefail
+# Part 1 generation, PuLID-FLUX baseline.
+# Submit with:  sbatch.tinygpu slurm/gen_pulid.sbatch
+# Verify the FluxGenerator signature with --limit 2 before launching the array.
+
+unset SLURM_EXPORT_ENV
+
 module load python/3.12-conda
 conda activate "$WORK/envs/pulid"
 
@@ -16,7 +22,9 @@ export HUGGINGFACE_HUB_CACHE="$WORK/hf/hub"
 export INSIGHTFACE_HOME="$WORK/insightface"
 export PRL="$WORK/prl26"
 
-srun python src/gen_pulid.py \
+cd "${SLURM_SUBMIT_DIR:-$HOME/prl26-infiniteyou}" || exit 1
+
+python src/gen_pulid.py \
   --manifest benchmark/manifest_repro.parquet \
   --out      "$PRL/results/images/pulid" \
   --pulid-repo "$PRL/PuLID" \

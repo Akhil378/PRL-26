@@ -6,18 +6,22 @@
 #SBATCH --array=0-7
 #SBATCH --output=logs/%x_%A_%a.out
 #SBATCH --error=logs/%x_%A_%a.err
+#SBATCH --export=NONE
 
 # Part 1 generation, InfU.
 #
-# Shard count and walltime come from tools/plan_shards.py, run with the
-# s/image MEASURED by slurm/smoke.sbatch. Do not request 24:00:00 out of
-# caution: SLURM backfill only slots a job into a gap at least as long as
-# the request, so a 24 h ask waits for a 24 h gap while a ~2 h ask drops
-# into the short gaps that actually exist on a busy cluster.
+# Submit with:  sbatch.tinygpu slurm/gen_infu.sbatch
+# (the .tinygpu suffix is required on the shared tinyx frontend; without it the
+#  command targets TinyFat instead.)
 #
-# Resubmitting after a timeout is safe: finished cells are skipped.
+# Shard count and --time come from tools/plan_shards.py using the s/image
+# MEASURED by slurm/smoke.sbatch. Do not pad --time to 24:00:00 out of caution:
+# SLURM backfill only fills a gap at least as long as the request, so a 24 h ask
+# waits for a 24 h gap while a ~2 h ask drops into the short gaps that actually
+# exist. Resubmitting after a timeout is safe -- finished cells are skipped.
 
-set -euo pipefail
+unset SLURM_EXPORT_ENV      # required by NHR: without it srun/modules misbehave
+
 module load python/3.12-conda
 conda activate "$WORK/envs/infu"
 
@@ -26,7 +30,10 @@ export HUGGINGFACE_HUB_CACHE="$WORK/hf/hub"
 export INSIGHTFACE_HOME="$WORK/insightface"
 export PRL="$WORK/prl26"
 
-srun python src/gen_infu.py \
+cd "${SLURM_SUBMIT_DIR:-$HOME/prl26-infiniteyou}" || exit 1
+nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
+
+python src/gen_infu.py \
   --manifest benchmark/manifest_repro.parquet \
   --out      "$PRL/results/images/infu_aes2" \
   --infu-repo "$PRL/InfiniteYou" \

@@ -107,41 +107,57 @@ def main():
         picker = PickScorer()
 
     import cv2
-    rows, t0 = [], time.time()
+    rows, t0, n_bad = [], time.time(), 0
     for n, r in enumerate(todo.itertuples(), 1):
         path = str(img_dir / r.file)
         ref = str(resolve(r.id_path))
-        img = Image.open(path).convert("RGB")
 
-        loss_a, det = id_scorers["antelopev2"].id_loss(path, ref)
-        loss_b, _ = id_scorers["buffalo_l"].id_loss(path, ref)
-
+        # Metadata is always recorded, even for an unreadable image, so the row
+        # is never silently missing from the table.
         rec = {
             "cell": r.cell, "method": args.method, "iid": r.iid, "pid": r.pid,
             "gender": r.gender, "face_size": r.face_size,
             "complexity": r.complexity, "length": r.length, "seed": r.seed,
-            "id_backend": args.id_backend,
-            "id_loss_antelope": loss_a, "id_loss_buffalo": loss_b,
-            "face_detected": det,
-            "prompt_truncates": primary.truncates(r.prompt),
+            "id_backend": args.id_backend, "score_status": "ok",
         }
-        for b in backbones:
-            rec[f"clipscore_{b.lower()}"] = clips[b].clipscore(img, r.prompt)
-        if picker is not None:
-            rec["pickscore_raw"] = picker.score_one(img, r.prompt)
-            rec["pickscore_paper"] = rec["pickscore_raw"] / PAPER_SCALE
-
         if is_style:
             rec["style"] = r.style
             rec["base_pid"] = r.base_pid
-            rec["style_score"] = primary.clipscore(img, r.style_phrase)
-            _, box = id_scorers["antelopev2"].embed_with_box(cv2.imread(path))
-            if box is None:
-                rec.update(fmi_style=None, fmi_photo=None, style_face=None,
-                           style_bg=None, photo_face=None, photo_bg=None,
-                           fmi_reason="no_face")
-            else:
-                rec.update(face_masking_index(img, r.style_phrase, box, primary))
+
+        try:
+            # A truncated or corrupt PNG is a realistic outcome of a job killed
+            # mid-write or a bad transfer. One of them must not destroy a scoring
+            # run that may already represent hours of work.
+            img = Image.open(path)
+            img.load()
+            img = img.convert("RGB")
+
+            loss_a, det = id_scorers["antelopev2"].id_loss(path, ref)
+            loss_b, _ = id_scorers["buffalo_l"].id_loss(path, ref)
+            rec.update(id_loss_antelope=loss_a, id_loss_buffalo=loss_b,
+                       face_detected=det,
+                       prompt_truncates=primary.truncates(r.prompt))
+            for b in backbones:
+                rec[f"clipscore_{b.lower()}"] = clips[b].clipscore(img, r.prompt)
+            if picker is not None:
+                rec["pickscore_raw"] = picker.score_one(img, r.prompt)
+                rec["pickscore_paper"] = rec["pickscore_raw"] / PAPER_SCALE
+
+            if is_style:
+                rec["style_score"] = primary.clipscore(img, r.style_phrase)
+                _, box = id_scorers["antelopev2"].embed_with_box(cv2.imread(path))
+                if box is None:
+                    rec.update(fmi_style=None, fmi_photo=None, style_face=None,
+                               style_bg=None, photo_face=None, photo_bg=None,
+                               fmi_reason="no_face")
+                else:
+                    rec.update(face_masking_index(img, r.style_phrase, box, primary))
+        except Exception as e:                 # noqa: BLE001
+            n_bad += 1
+            rec.update(score_status=f"error:{type(e).__name__}:{str(e)[:60]}",
+                       id_loss_antelope=None, id_loss_buffalo=None,
+                       face_detected=False)
+            print(f"  [{r.cell}] unscorable: {type(e).__name__}", flush=True)
 
         rows.append(rec)
         if n % args.flush_every == 0:

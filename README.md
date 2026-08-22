@@ -41,8 +41,23 @@ Generated images and score tables live on `$WORK`, never in this repository.
 ## Tests
 
 ```bash
-python tests/test_crops.py    # FMI crop geometry
-python tests/test_runner.py   # shard selection and resume
+python tools/run_local_e2e.py --clean   # 11-step pipeline proof, no GPU needed
+python tests/test_robustness.py         # adversarial failure modes
+```
+
+The end-to-end run exercises the real production code path, substituting only
+what a laptop cannot run: the diffusion model (`src/gen_stub.py`) and insightface
+(`--id-backend stub`, which uses OpenCV YuNet + SFace instead).
+
+## Submitting on the cluster
+
+See [slurm/SUBMITTING.md](slurm/SUBMITTING.md). Short version:
+
+```bash
+bash tools/setup_cluster.sh                                  # once, on the frontend
+sbatch.tinygpu slurm/smoke.sbatch quantize "--quantize-8bit" # measure s/image
+python tools/plan_shards.py --manifest benchmark/manifest_repro.parquet     --sec-per-image <MEASURED> --target-hours 2              # size the array
+sbatch.tinygpu slurm/gen_infu.sbatch                         # then the real run
 ```
 
 ## Rebuilding the benchmark
