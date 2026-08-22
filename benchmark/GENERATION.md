@@ -23,7 +23,7 @@ with gender information attached. The reconstruction follows those declared axes
 | Field | Levels |
 |---|---|
 | `gender` | female, male |
-| `length` | short (≤8 words), medium (9–20), long (≥21) |
+| `length` | short (<=8 words), medium (9-20), long (>=21) |
 | `face_size` | closeup, waist, full |
 | `complexity` | plain, single_object, busy |
 | `age_hint` | none, young, senior |
@@ -41,7 +41,7 @@ from that output rather than from intent.
    examples include prompts such as "Asian girl in garden". Pairing a prompt that
    specifies ethnicity with an identity photograph of a different ethnicity puts
    the text conditioning and the identity conditioning in direct conflict, and
-   any resulting ID Loss is then uninterpretable — it cannot be separated from
+   any resulting ID Loss is then uninterpretable -- it cannot be separated from
    the model resolving a contradiction it was handed. Ethnicity is carried by the
    identity image alone. Coverage across ethnicities is a property of the
    identity set, not the prompt set.
@@ -52,8 +52,8 @@ from that output rather than from intent.
    stratum rather than being spread invisibly through the benchmark.
 
 4. **The male and female subsets are content-parallel.** Prompts are written in
-   matched pairs (p068↔p168, p099↔p199, …) that differ only in the subject.
-   Realised `gender × length` and `gender × face_size` cross-tabs are exactly
+   matched pairs (p068\u2194p168, p099\u2194p199, ...) that differ only in the subject.
+   Realised `gender x length` and `gender x face_size` cross-tabs are exactly
    equal, so any gender difference in the results cannot be attributed to the
    two subsets describing different scenes.
 
@@ -67,7 +67,7 @@ The paper reports 200 prompts, 15 identities and **1,497** outputs. The full
 cross product is 3,000, so pairing is not exhaustive. Prompts carry gender and
 are paired with "appropriate" identities, which halves it.
 
-This benchmark with a 8F/7M identity split projects **1,500** cells — within
+This benchmark with a 8F/7M identity split projects **1,500** cells -- within
 three of the reported figure. That agreement is the evidence that the
 gender-matched reading is correct; it was a hypothesis before the benchmark was
 built and a measurement afterwards.
@@ -83,7 +83,7 @@ Sourcing constraints, in priority order:
 1. **No dataset used in InfU stage-1 pretraining.** That rules out FFHQ, CelebA,
    CelebV-HQ, CelebV-Text, VGGFace2, MillionCelebs, VFHQ, EasyPortrait and
    CosmicManHQ. Drawing test identities from InfU's training data would evaluate
-   it on data it has seen — and because PuLID-FLUX was trained on a different
+   it on data it has seen -- and because PuLID-FLUX was trained on a different
    corpus, the contamination would be **asymmetric** and would silently favour
    InfU. The paper does not state where its 15 identities came from.
 
@@ -97,7 +97,7 @@ Sourcing constraints, in priority order:
    the results is a cheap addition that it lacks.
 
 4. **Technically valid:** one face, frontal to three-quarter, unobstructed,
-   ≥512 px on the face crop, neutral or mild expression, no heavy filtering.
+   >=512 px on the face crop, neutral or mild expression, no heavy filtering.
    Each candidate must be detected by `antelopev2` before adoption.
 
 The `part2` flag marks the 8-identity subset (4F/4M) used for the stylization
@@ -113,12 +113,12 @@ seed = int(sha256(f"{iid}|{base_pid}").hexdigest()[:8], 16) % 2**31
 
 Two consequences, both deliberate:
 
-- **Across methods** — InfU and PuLID read the same manifest, so a given cell
+- **Across methods** -- InfU and PuLID read the same manifest, so a given cell
   starts from the same initial latent in both. The comparison is paired at the
   level of the noise, which removes a large variance component.
-- **Across styles** — the key uses the *base* prompt, so the photoreal control
+- **Across styles** -- the key uses the *base* prompt, so the photoreal control
   and its stylised siblings share a latent. The within-cell difference
-  Δ_style therefore isolates the style effect instead of mixing it with noise.
+  \u0394_style therefore isolates the style effect instead of mixing it with noise.
 
 `derive_seed` in `src/manifest.py` must never be modified once generation has
 started; doing so silently invalidates every image already produced.

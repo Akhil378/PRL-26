@@ -25,14 +25,14 @@ Generated images and score tables live on `$WORK`, never in this repository.
 
 ## Status
 
-- [x] Benchmark rebuilt and frozen â€” 200 prompts, 1,500 projected cells
-- [x] Part 2 style grid â€” 36 base prompts x 4 conditions, 576 cells/method
+- [x] Benchmark rebuilt and frozen -- 200 prompts, 1,500 projected cells
+- [x] Part 2 style grid -- 36 base prompts x 4 conditions, 576 cells/method
 - [x] Manifest builder with derived, paired seeds
 - [ ] Identity set curated (15 CC0 portraits, contamination-free)
 - [x] Generation runners (InfU + PuLID), sharded and resumable
-- [x] Metric harness — ID Loss x2 recognisers, CLIPScore, PickScore, FMI
+- [x] Metric harness -- ID Loss x2 recognisers, CLIPScore, PickScore, FMI
 - [x] SLURM scripts and pre-registered configs
-- [x] Local test suite (crop geometry, sharding, resume) — 31 checks passing
+- [x] Local test suite (crop geometry, sharding, resume) -- 31 checks passing
 - [ ] Identity set curated (15 CC0 portraits, contamination-free)
 - [ ] Smoke test + timing calibration on A100
 - [ ] Part 1 run
