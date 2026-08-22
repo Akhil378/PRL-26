@@ -34,6 +34,16 @@ export HUGGINGFACE_HUB_CACHE="$WORK/hf/hub"
 export INSIGHTFACE_HOME="$WORK/insightface"
 export PRL="$WORK/prl26"
 
+# Compute nodes have NO outbound internet. Any HuggingFace call that tries the
+# network hangs on connect retries instead of failing: a smoke job sat for 25
+# minutes inside snapshot_download() for a repo already fully cached on $WORK.
+# Offline mode makes the hub resolve from cache and fail fast if something is
+# genuinely missing, which is the error you want.
+export HF_HUB_OFFLINE=1
+export TRANSFORMERS_OFFLINE=1
+export HF_HUB_DISABLE_TELEMETRY=1
+export NO_ALBUMENTATIONS_UPDATE=1
+
 cd "${SLURM_SUBMIT_DIR:-$HOME/prl26-infiniteyou}" || exit 1
 nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
 
