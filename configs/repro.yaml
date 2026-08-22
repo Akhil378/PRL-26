@@ -34,4 +34,11 @@ cluster:
   qos: normal                     # MaxTRES gres/gpu=50 per user, no job-count cap
   quota_home_gb: 100              # /home/hpc/rlvl/rlvl159v
   quota_work_gb: 1000             # /home/woody/rlvl/rlvl159v  ($WORK)
-  observed_queue_wait: "~3.5 h for a 1 h single-GPU job while fully subscribed"
+  observed_queue_wait: "highly variable: 3.5 h (Thu evening) vs 18 min (Fri morning)"
+  hpcvault: not_provisioned      # /home/vault/rlvl/rlvl159v does not exist
+  home_filesystem_full: "92% used cluster-wide - keep everything on $WORK"
+  stale_guidance: >
+    The IDEA Lab HPC-Introduction deck (April 2024) says to load
+    python/3.8-anaconda; that module does not exist on TinyGPU. It also quotes
+    50/500/200 GB quotas; measured values are 100 GB $HOME and ~1 TB $WORK.
+    Measured values win.
