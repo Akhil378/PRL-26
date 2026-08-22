@@ -76,13 +76,33 @@ if [ ! -d "$WORK/envs/pulid" ]; then
 fi
 
 echo "=== 3. weights ==="
+# ~90 GB over a link that drops. A single ChunkedEncodingError once killed this
+# whole script via set -e, after 54 GB had already landed. Retry instead, and
+# never let one repo abort the rest: huggingface-cli resumes from .incomplete
+# blobs, so a retry costs only the bytes actually lost.
+FAILED_REPOS=""
+hf_get() {
+  local env="$1" repo="$2"; shift 2
+  for attempt in 1 2 3 4 5; do
+    if conda run -p "$WORK/envs/$env" huggingface-cli download "$repo" "$@"; then
+      echo "  ok: $repo"
+      return 0
+    fi
+    echo "  attempt $attempt/5 failed for $repo; retrying in 20s"
+    sleep 20
+  done
+  echo "  GIVING UP on $repo"
+  FAILED_REPOS="$FAILED_REPOS $repo"
+  return 0            # keep going; reported in the summary
+}
+
 # FLUX.1-dev is gated: accept the licence and `huggingface-cli login` first.
-conda run -p "$WORK/envs/infu" huggingface-cli download black-forest-labs/FLUX.1-dev --exclude "*.gguf"
-conda run -p "$WORK/envs/infu" huggingface-cli download ByteDance/InfiniteYou
-conda run -p "$WORK/envs/metrics" huggingface-cli download openai/clip-vit-large-patch14
-conda run -p "$WORK/envs/metrics" huggingface-cli download openai/clip-vit-base-patch32
-conda run -p "$WORK/envs/metrics" huggingface-cli download yuvalkirstain/PickScore_v1
-conda run -p "$WORK/envs/metrics" huggingface-cli download laion/CLIP-ViT-H-14-laion2B-s32B-b79K
+hf_get infu    black-forest-labs/FLUX.1-dev --exclude "*.gguf"
+hf_get infu    ByteDance/InfiniteYou
+hf_get metrics openai/clip-vit-large-patch14
+hf_get metrics openai/clip-vit-base-patch32
+hf_get metrics yuvalkirstain/PickScore_v1
+hf_get metrics laion/CLIP-ViT-H-14-laion2B-s32B-b79K
 
 echo "=== 4. insightface packs ==="
 conda run -p "$WORK/envs/metrics" python - << 'PY'
@@ -92,6 +112,11 @@ for pack in ("antelopev2", "buffalo_l"):
     print("ready:", pack)
 PY
 
+echo
+if [ -n "$FAILED_REPOS" ]; then
+  echo "!!! these repos did not complete:$FAILED_REPOS"
+  echo "!!! re-run this script; downloads resume from where they stopped."
+fi
 echo
 echo "=== disk used on \$WORK ==="
 du -sh "$WORK/hf" "$WORK/envs" "$PRL" 2>/dev/null || true
