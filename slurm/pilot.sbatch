@@ -60,6 +60,7 @@ else
     --pulid-repo "$PRL/PuLID" \
     --shard 0 --num-shards "$SHARDS" $FLAGS
 fi
+rc=$?
 
 echo "--- pilot timing ---"
 python - << 'PY'
@@ -74,3 +75,8 @@ for p in sorted(glob.glob(os.path.expandvars("$PRL/results/images/*/log_shard0.c
     if len(bad):
         print(f"  {len(bad)} failures:", bad.status.value_counts().to_dict())
 PY
+
+# Exit with the GENERATOR's status, not the trailing report's. Job 1789452
+# crashed in python yet reported State=COMPLETED ExitCode=0:0 to sacct because
+# this reporting block succeeded after it. A failure has to look like one.
+exit $rc
