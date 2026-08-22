@@ -87,10 +87,17 @@ def main():
 
     infu_path = resolve_model_dir(
         a.model_dir, f"infu_flux_{a.infu_flux_version}/{a.model_version}")
-    print(f"loading pipeline from {infu_path}", flush=True)
+    # Resolve the BASE model to a local path too. Compute nodes are offline, and
+    # InfUFluxPipeline hands base_model_path straight to diffusers, which tries
+    # the hub API for a repo id and dies under HF_HUB_OFFLINE even though the
+    # weights are cached. snapshot_download() reads the cache offline, so this
+    # turns a repo id into the concrete snapshot directory.
+    base_path = resolve_model_dir(a.base_model)
+    print(f"base model:  {base_path}", flush=True)
+    print(f"infu model:  {infu_path}", flush=True)
     t0 = time.time()
     pipe = InfUFluxPipeline(
-        base_model_path=a.base_model,
+        base_model_path=base_path,
         infu_model_path=infu_path,
         insightface_root_path=a.insightface_root or ".",
         infu_flux_version=a.infu_flux_version,
