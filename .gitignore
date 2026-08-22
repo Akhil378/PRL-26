@@ -4,7 +4,7 @@ __pycache__/
 results/
 *.png
 *.jpg
-!benchmark/identities/*.jpg
+
 *.out
 *.err
 .ipynb_checkpoints/
@@ -16,3 +16,10 @@ tests/fixtures/models/
 tests/fixtures/identities/
 tests/fixtures/identities_test.json
 tests/fixtures/*.parquet
+
+# Identity images are fetched by tools/fetch_identities.py from a DOI-stable
+# source. Not redistributed from here: identities.json and LICENSES.md record
+# exactly which FRLL records they are, so the set is reproducible without
+# republishing photographs of research participants.
+benchmark/identities/*.jpg
+benchmark/.frll_cache/
