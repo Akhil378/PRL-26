@@ -13,8 +13,11 @@ export HF_HOME="$WORK/hf"
 export HUGGINGFACE_HUB_CACHE="$WORK/hf/hub"
 export INSIGHTFACE_HOME="$WORK/insightface"
 # conda's default package cache is /apps/python/3.12-conda/pkgs, which is
-# read-only. Without this, every `conda create` dies with NoWritablePkgsDirError.
-export CONDA_PKGS_DIRS="$WORK/conda/pkgs"
+# read-only, so every `conda create` dies with NoWritablePkgsDirError.
+# Setting CONDA_PKGS_DIRS is NOT enough: the python/3.12-conda modulefile
+# PREPENDS the read-only path to it, so whatever is exported before
+# `module load` gets clobbered. Configure it in ~/.condarc instead, which no
+# modulefile touches.
 mkdir -p "$PRL" "$HF_HOME" "$INSIGHTFACE_HOME" "$WORK/envs" "$CONDA_PKGS_DIRS" logs
 
 echo "=== 0. persist the cache locations ==="
@@ -26,7 +29,6 @@ export PRL="$WORK/prl26"
 export HF_HOME="$WORK/hf"
 export HUGGINGFACE_HUB_CACHE="$WORK/hf/hub"
 export INSIGHTFACE_HOME="$WORK/insightface"
-export CONDA_PKGS_DIRS="$WORK/conda/pkgs"   # system pkgs dir is read-only
 export PATH="$WORK/envs/tools/bin:$PATH"
 RC
 
@@ -41,6 +43,13 @@ echo "=== 1. upstream repositories ==="
 [ -d "$PRL/PuLID" ]       || git clone --depth 1 https://github.com/ToTheBeginning/PuLID.git   "$PRL/PuLID"
 
 module load python/3.12-conda
+unset CONDA_PKGS_DIRS          # let ~/.condarc win over the modulefile's prepend
+
+if ! grep -q "pkgs_dirs" ~/.condarc 2>/dev/null; then
+  conda config --add pkgs_dirs "$WORK/conda/pkgs"
+  conda config --add envs_dirs "$WORK/envs"
+fi
+echo "pkgs_dirs -> $(conda config --show pkgs_dirs | tail -1)"
 
 echo "=== 2. environments ==="
 # small frontend env: huggingface-cli for the gated login, available before the
