@@ -37,7 +37,7 @@ python src/gen_infu.py \
   --manifest benchmark/manifest_repro.parquet \
   --out      "$PRL/results/images/infu_aes2" \
   --infu-repo "$PRL/InfiniteYou" \
-  --insightface-root "$INSIGHTFACE_HOME/models" \
+  --insightface-root "$INSIGHTFACE_HOME" \
   --model-version aes_stage2 \
   --quantize-8bit \
   --shard "$SLURM_ARRAY_TASK_ID" --num-shards 8

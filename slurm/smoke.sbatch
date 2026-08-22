@@ -40,7 +40,7 @@ python src/gen_infu.py \
   --manifest benchmark/manifest_repro.parquet \
   --out "$PRL/results/images/smoke_${PROFILE}" \
   --infu-repo "$PRL/InfiniteYou" \
-  --insightface-root "$INSIGHTFACE_HOME/models" \
+  --insightface-root "$INSIGHTFACE_HOME" \
   --limit 20 $FLAGS
 
 echo "--- median s/image for profile ${PROFILE} ---"

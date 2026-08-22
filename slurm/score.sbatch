@@ -34,5 +34,5 @@ python src/score_all.py \
   --manifest "benchmark/${MANIFEST}.parquet" \
   --images   "$PRL/results/images/${METHOD}" \
   --method   "${METHOD}" \
-  --id-root  "$INSIGHTFACE_HOME/models" \
+  --id-root  "$INSIGHTFACE_HOME" \
   --out      "$PRL/results/scores/${METHOD}_${MANIFEST}.parquet"

@@ -105,12 +105,40 @@ hf_get metrics yuvalkirstain/PickScore_v1
 hf_get metrics laion/CLIP-ViT-H-14-laion2B-s32B-b79K
 
 echo "=== 4. insightface packs ==="
-conda run -p "$WORK/envs/metrics" python - << 'PY'
+# insightface does NOT read INSIGHTFACE_HOME. FaceAnalysis(root=R) resolves to
+# R/models/<pack> (see insightface.utils.storage.download), so R must be
+# $INSIGHTFACE_HOME and never $INSIGHTFACE_HOME/models.
+mkdir -p "$INSIGHTFACE_HOME/models"
+
+# antelopev2 ships inside the InfiniteYou release. Use those weights rather than
+# the insightface GitHub copy: they are what InfU actually conditions on, so
+# scoring with them removes any doubt about weight-version drift.
+SNAP=$(ls -d "$HF_HOME"/hub/models--ByteDance--InfiniteYou/snapshots/*/ 2>/dev/null | head -1)
+if [ -n "$SNAP" ] && [ -d "$SNAP/supports/insightface/models/antelopev2" ]; then
+  if [ ! -f "$INSIGHTFACE_HOME/models/antelopev2/glintr100.onnx" ]; then
+    mkdir -p "$INSIGHTFACE_HOME/models/antelopev2"
+    cp -L "$SNAP"/supports/insightface/models/antelopev2/*.onnx           "$INSIGHTFACE_HOME/models/antelopev2/"
+  fi
+  echo "  antelopev2 <- InfiniteYou release ($(ls "$INSIGHTFACE_HOME/models/antelopev2" | wc -l) files)"
+else
+  echo "  WARNING: InfiniteYou snapshot missing; antelopev2 not staged"
+fi
+
+# buffalo_l is the held-out recogniser and is not bundled anywhere, so fetch it.
+# NOTE: this runs from a FILE, not a heredoc. `conda run` does not forward
+# stdin, so `conda run ... python - << EOF` silently executes nothing, exits 0
+# and looks like success. That is how this step became a no-op once already.
+cat > /tmp/_prl_ifpacks.py << 'PYEOF'
+import os
 from insightface.app import FaceAnalysis
+root = os.environ["INSIGHTFACE_HOME"]
 for pack in ("antelopev2", "buffalo_l"):
-    FaceAnalysis(name=pack, providers=["CPUExecutionProvider"]).prepare(ctx_id=-1)
-    print("ready:", pack)
-PY
+    app = FaceAnalysis(name=pack, root=root, providers=["CPUExecutionProvider"])
+    app.prepare(ctx_id=-1, det_size=(640, 640))
+    print("  ready:", pack, "->", os.path.join(root, "models", pack))
+PYEOF
+conda run --no-capture-output -p "$WORK/envs/metrics" python /tmp/_prl_ifpacks.py
+rm -f /tmp/_prl_ifpacks.py
 
 echo
 if [ -n "$FAILED_REPOS" ]; then
