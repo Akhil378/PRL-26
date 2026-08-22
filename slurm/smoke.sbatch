@@ -9,6 +9,12 @@
 
 # Phase 1 timing calibration -- run this FIRST, before any array job.
 # Generates 20 images under one memory profile and reports median s/image.
+#
+# Reads the real manifest, so the measurement reflects actual work: the curated
+# 1350x1350 reference portraits and the real prompt-length distribution. Output
+# goes to a per-profile directory and is discarded -- only the timing matters,
+# and mixing images from two memory profiles into one result set would confound
+# the comparison with a quantisation effect.
 # Feed that number into tools/plan_shards.py to size the real runs.
 #
 #   sbatch.tinygpu slurm/smoke.sbatch quantize   "--quantize-8bit"
@@ -30,10 +36,6 @@ export PRL="$WORK/prl26"
 
 cd "${SLURM_SUBMIT_DIR:-$HOME/prl26-infiniteyou}" || exit 1
 nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
-
-# Uses the two upstream example portraits, NOT the curated identity set, so
-# calibration is not blocked on identity sourcing. Idempotent.
-python tools/make_fixtures.py
 
 # shellcheck disable=SC2086
 python src/gen_infu.py \
