@@ -140,6 +140,30 @@ PYEOF
 conda run --no-capture-output -p "$WORK/envs/metrics" python /tmp/_prl_ifpacks.py
 rm -f /tmp/_prl_ifpacks.py
 
+echo "=== 5. facexlib weights ==="
+# InfU calls facexlib's init_recognition_model('arcface'), which lazily fetches
+# a .pth from GitHub the first time it runs. Compute nodes are offline, so that
+# download times out and takes the job with it. Stage the weights now, on the
+# frontend, where there is internet.
+FACEX_URLS="
+https://github.com/xinntao/facexlib/releases/download/v0.1.0/recognition_arcface_ir_se50.pth
+https://github.com/xinntao/facexlib/releases/download/v0.1.0/detection_Resnet50_Final.pth
+https://github.com/xinntao/facexlib/releases/download/v0.2.2/parsing_parsenet.pth
+"
+for env in infu pulid; do
+  WDIR=$(find "$WORK/envs/$env/lib" -maxdepth 3 -type d -name weights -path "*facexlib*" 2>/dev/null | head -1)
+  [ -z "$WDIR" ] && { echo "  $env: facexlib not installed, skipping"; continue; }
+  for u in $FACEX_URLS; do
+    f="$WDIR/$(basename "$u")"
+    if [ -s "$f" ]; then
+      echo "  $env: $(basename "$u") already present"
+    else
+      echo "  $env: fetching $(basename "$u")"
+      curl -sSL --retry 3 -o "$f" "$u" || echo "    WARNING: failed"
+    fi
+  done
+done
+
 echo
 if [ -n "$FAILED_REPOS" ]; then
   echo "!!! these repos did not complete:$FAILED_REPOS"
