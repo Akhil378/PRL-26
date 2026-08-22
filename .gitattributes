@@ -1,0 +1,15 @@
+# Shell and SLURM scripts must be LF: a CRLF shebang makes Linux report
+# "bad interpreter: /bin/bash^M", which is an obscure way to lose a job.
+* text=auto eol=lf
+*.sbatch text eol=lf
+*.sh     text eol=lf
+*.py     text eol=lf
+*.md     text eol=lf
+*.yaml   text eol=lf
+*.json   text eol=lf
+*.jsonl  text eol=lf
+
+*.png     binary
+*.jpg     binary
+*.parquet binary
+*.onnx    binary
