@@ -52,7 +52,7 @@ from that output rather than from intent.
    stratum rather than being spread invisibly through the benchmark.
 
 4. **The male and female subsets are content-parallel.** Prompts are written in
-   matched pairs (p068\u2194p168, p099\u2194p199, ...) that differ only in the subject.
+   matched pairs (p068<->p168, p099<->p199, ...) that differ only in the subject.
    Realised `gender x length` and `gender x face_size` cross-tabs are exactly
    equal, so any gender difference in the results cannot be attributed to the
    two subsets describing different scenes.
@@ -118,7 +118,7 @@ Two consequences, both deliberate:
   level of the noise, which removes a large variance component.
 - **Across styles** -- the key uses the *base* prompt, so the photoreal control
   and its stylised siblings share a latent. The within-cell difference
-  \u0394_style therefore isolates the style effect instead of mixing it with noise.
+  Delta_style therefore isolates the style effect instead of mixing it with noise.
 
 `derive_seed` in `src/manifest.py` must never be modified once generation has
 started; doing so silently invalidates every image already produced.
