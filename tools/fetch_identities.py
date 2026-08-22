@@ -161,13 +161,16 @@ def select(rows, gender: str, n: int, rotate: int):
 
     quota = allocate({e: len(v) for e, v in usable.items()}, n)
     chosen = []
-    for e in sorted(usable):
+    for ei, e in enumerate(sorted(usable)):
         cands = usable[e]
         by_band = defaultdict(list)
         for r in cands:
             by_band[r["band"]].append(r)
         bands = sorted(by_band)
-        i = rotate
+        # Offset the band rotation per ethnicity as well as per gender. With a
+        # shared offset every ethnicity starts at the same band and the picks
+        # pile into it: that produced 4/8/3 across age bands instead of ~5/5/5.
+        i = rotate + ei
         while len([c for c in chosen if c["eth"] == e]) < quota[e]:
             b = bands[i % len(bands)]
             if by_band[b]:
