@@ -151,7 +151,10 @@ https://github.com/xinntao/facexlib/releases/download/v0.1.0/detection_Resnet50_
 https://github.com/xinntao/facexlib/releases/download/v0.2.2/parsing_parsenet.pth
 "
 for env in infu pulid; do
-  WDIR=$(find "$WORK/envs/$env/lib" -maxdepth 3 -type d -name weights -path "*facexlib*" 2>/dev/null | head -1)
+  # Ask the package where it lives rather than guessing a path depth: the dir is
+  # lib/python3.11/site-packages/facexlib/weights, which a shallow find misses.
+  WDIR=$("$WORK/envs/$env/bin/python" -c     "import facexlib,os;print(os.path.join(os.path.dirname(facexlib.__file__),'weights'))"     2>/dev/null)
+  [ -n "$WDIR" ] && mkdir -p "$WDIR"
   [ -z "$WDIR" ] && { echo "  $env: facexlib not installed, skipping"; continue; }
   for u in $FACEX_URLS; do
     f="$WDIR/$(basename "$u")"
