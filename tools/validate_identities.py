@@ -25,7 +25,11 @@ FORBIDDEN = ["ffhq", "celeba", "celebv", "celebvhq", "celebv-hq", "celebv-text",
              "vggface", "vggface2", "millioncelebs", "vfhq", "easyportrait",
              "cosmicman", "cosmicmanhq"]
 
-MIN_FACE_PX = 512
+# ArcFace consumes a 112x112 aligned crop, so the only real requirement is that
+# the detected face is comfortably above that before downsampling. 256 px is 2x
+# the model input in each dimension; the earlier 512 was an invented number that
+# rejected 1350x1350 studio portraits whose faces occupy ~35% of the frame.
+MIN_FACE_PX = 256
 
 
 def main():
@@ -83,14 +87,16 @@ def main():
             print(f"  FAIL  {r['iid']}  " + "; ".join(problems))
         else:
             ok_count += 1
+            group = r.get("ethnicity", r.get("skin_tone", "?"))
             print(f"  OK    {r['iid']}  {r['gender']:<6} {r['age_band']:<6} "
-                  f"{r['skin_tone']:<7} {r.get('licence','')}")
+                  f"{group:<12} {r.get('licence','')}")
             if args.mark_ready and app is not None:
                 r["status"] = "ready"
 
     print(f"\n{ok_count}/{len(rows)} identities pass")
-    for f in ("gender", "age_band", "skin_tone"):
-        print(f"  {f:<10}", dict(Counter(r[f] for r in rows)))
+    for f in ("gender", "age_band", "ethnicity"):
+        if any(f in r for r in rows):
+            print(f"  {f:<10}", dict(Counter(r.get(f, "?") for r in rows)))
     n2 = sum(1 for r in rows if r.get("part2"))
     print(f"  part2 subset: {n2} "
           f"({dict(Counter(r['gender'] for r in rows if r.get('part2')))})")
