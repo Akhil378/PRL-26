@@ -31,6 +31,10 @@ export PRL="$WORK/prl26"
 cd "${SLURM_SUBMIT_DIR:-$HOME/prl26-infiniteyou}" || exit 1
 nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
 
+# Uses the two upstream example portraits, NOT the curated identity set, so
+# calibration is not blocked on identity sourcing. Idempotent.
+python tools/make_fixtures.py
+
 # shellcheck disable=SC2086
 python src/gen_infu.py \
   --manifest benchmark/manifest_repro.parquet \

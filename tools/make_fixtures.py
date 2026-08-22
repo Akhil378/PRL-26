@@ -72,6 +72,7 @@ def build_manifests():
     import pandas as pd
 
     def make(rows, key, path, styles=False):
+        """Write a fixture manifest; returns the records."""
         recs = []
         for p in rows:
             for i in ids:
@@ -94,6 +95,15 @@ def build_manifests():
 
     p1 = take(prompts, "female", 3) + take(prompts, "male", 3)
     make(p1, "pid", "manifest_test.parquet")
+
+    # Timing calibration must not wait on identity curation: how long a FLUX
+    # step takes has nothing to do with whose face is conditioning it. This
+    # manifest uses the two upstream example portraits so slurm/smoke.sbatch can
+    # run the moment the environment exists.
+    med = [r for r in sorted(prompts, key=lambda x: x["pid"]) if r["length"] == "medium"]
+    smoke = ([r for r in med if r["gender"] == "female"][:12]
+             + [r for r in med if r["gender"] == "male"][:12])
+    make(smoke, "pid", "manifest_smoke.parquet")
 
     # two base prompts x all four styles, so the paired delta can be computed
     bases = sorted({s["base_pid"] for s in style})[:2]
