@@ -145,10 +145,14 @@ echo "=== 5. facexlib weights ==="
 # a .pth from GitHub the first time it runs. Compute nodes are offline, so that
 # download times out and takes the job with it. Stage the weights now, on the
 # frontend, where there is internet.
+# parsing_bisenet.pth is PuLID's face-parsing model: pipeline_flux.py calls
+# init_parsing_model(model_name='bisenet'), which is a DIFFERENT file from the
+# parsenet one InfU pulls in. Missing it stalls PuLID on the offline node.
 FACEX_URLS="
 https://github.com/xinntao/facexlib/releases/download/v0.1.0/recognition_arcface_ir_se50.pth
 https://github.com/xinntao/facexlib/releases/download/v0.1.0/detection_Resnet50_Final.pth
 https://github.com/xinntao/facexlib/releases/download/v0.2.2/parsing_parsenet.pth
+https://github.com/xinntao/facexlib/releases/download/v0.2.0/parsing_bisenet.pth
 "
 for env in infu pulid; do
   # Ask the package where it lives rather than guessing a path depth: the dir is
@@ -166,6 +170,18 @@ for env in infu pulid; do
     fi
   done
 done
+
+echo "=== 6. PuLID runtime weights ==="
+# PuLID does not reuse FLUX's diffusers components and does not take model paths
+# as arguments -- it hardcodes them relative to the cwd. Staging is fiddly enough
+# to deserve its own script; run it from a FILE, never a heredoc, because
+# `conda run` does not forward stdin.
+if conda run -p "$WORK/envs/pulid" --no-capture-output python tools/stage_pulid.py; then
+  echo "  PuLID staging complete"
+else
+  echo "  !!! PuLID staging incomplete -- re-run: bash tools/setup_cluster.sh"
+  FAILED_REPOS="$FAILED_REPOS pulid-weights"
+fi
 
 echo
 if [ -n "$FAILED_REPOS" ]; then

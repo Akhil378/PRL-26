@@ -23,3 +23,9 @@ tests/fixtures/*.parquet
 # republishing photographs of research participants.
 benchmark/identities/*.jpg
 benchmark/.frll_cache/
+
+# PuLID resolves its weights relative to the cwd (models/flux1-dev.safetensors,
+# models/antelopev2/, models/pulid_flux_*.safetensors). tools/stage_pulid.py
+# makes this a symlink to $WORK because the FLUX single-file weight alone is
+# 23.8 GB and $HOME is a 100 GB quota.
+/models

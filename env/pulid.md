@@ -12,9 +12,19 @@ pip install -r PuLID/requirements.txt
 pip install pandas pyarrow
 ```
 
-Weights: `flux1-dev.safetensors` and `ae.safetensors` from the gated
-`black-forest-labs/FLUX.1-dev` repo; the PuLID weights auto-download from
-`guozinan/PuLID`. Point `FLUX_DEV` and `AE` at the files under `$WORK`.
+Weights: run `tools/stage_pulid.py` (step 6 of `tools/setup_cluster.sh`). Do not
+try to point `FLUX_DEV` and `AE` at the files -- in the pinned checkout those env
+vars are only read for `flux-schnell`. The `flux-dev` spec in `flux/util.py`
+hardcodes `ckpt_path='models/flux1-dev.safetensors'` and
+`ae_path='models/ae.safetensors'`, both relative to the CWD, so setting the env
+vars is a silent no-op. `pipeline_flux.py` likewise hardcodes
+`models/antelopev2/` and `models/pulid_flux_<version>.safetensors`.
+
+The staging script therefore makes the repo root's `models/` a symlink to
+`$WORK/prl26/models` and fills it. `flux1-dev.safetensors` and `ae.safetensors`
+are **linked out of the existing HF cache**, not re-downloaded: `load_flow_model`
+and `load_ae` check `os.path.exists()` before any hub call, so presence is all
+that is required. That saves 24 GB of transfer.
 
 Memory on A100 40 GB: bf16 + `--offload` stays under 30 GB and preserves facial
 detail. Avoid `--fp8` for the headline runs; the PuLID docs note degradation in
