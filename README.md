@@ -1,5 +1,9 @@
 # Reproducing and extending InfiniteYou
 
+> **Project notes and current state: [CONTEXT.md](CONTEXT.md).**
+> It carries the current state, every hard-won cluster fact, the measured
+> numbers, and the immediate blocker. It is kept current; this README is not.
+
 Course project, Project Representation Learning (FAU, summer 2026).
 Paper: Jiang et al., *InfiniteYou: Flexible Photo Recrafting While Preserving
 Your Identity*, ICCV 2025. Upstream code: `github.com/bytedance/InfiniteYou`.
