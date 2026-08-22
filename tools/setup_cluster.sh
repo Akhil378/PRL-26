@@ -18,7 +18,7 @@ export INSIGHTFACE_HOME="$WORK/insightface"
 # PREPENDS the read-only path to it, so whatever is exported before
 # `module load` gets clobbered. Configure it in ~/.condarc instead, which no
 # modulefile touches.
-mkdir -p "$PRL" "$HF_HOME" "$INSIGHTFACE_HOME" "$WORK/envs" "$CONDA_PKGS_DIRS" logs
+mkdir -p "$PRL" "$HF_HOME" "$INSIGHTFACE_HOME" "$WORK/envs" "$WORK/conda/pkgs" logs
 
 echo "=== 0. persist the cache locations ==="
 # ~60 GB of weights; $HOME is 100 GB and also holds the conda envs
