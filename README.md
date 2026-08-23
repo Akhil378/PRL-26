@@ -32,15 +32,17 @@ Generated images and score tables live on `$WORK`, never in this repository.
 - [x] Benchmark rebuilt and frozen -- 200 prompts, 1,500 projected cells
 - [x] Part 2 style grid -- 36 base prompts x 4 conditions, 576 cells/method
 - [x] Manifest builder with derived, paired seeds
-- [ ] Identity set curated (15 CC0 portraits, contamination-free)
+- [x] Identity set curated -- 15 FRLL portraits, CC BY 4.0, contamination-free
 - [x] Generation runners (InfU + PuLID), sharded and resumable
 - [x] Metric harness -- ID Loss x2 recognisers, CLIPScore, PickScore, FMI
 - [x] SLURM scripts and pre-registered configs
-- [x] Local test suite (crop geometry, sharding, resume) -- 31 checks passing
-- [ ] Identity set curated (15 CC0 portraits, contamination-free)
-- [ ] Smoke test + timing calibration on A100
-- [ ] Part 1 run
-- [ ] Part 2 run
+- [x] Local test suite (crops, sharding, resume, paired statistics)
+- [x] Smoke test + timing calibration on A100 -- 24.8 s/img at 8-bit
+- [x] Both generation paths proven end to end on the cluster
+- [ ] Part 1 run -- pilot arms running, full arrays not yet launched
+- [ ] Part 2 run -- **no generation script exists yet**, see CONTEXT 6.4
+- [ ] Part 2 calibration control and sweep -- pre-registered, unimplemented
+- [ ] Report -- `report/` is empty; the IDEA Lab template is required
 
 ## Tests
 

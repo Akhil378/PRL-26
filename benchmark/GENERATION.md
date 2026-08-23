@@ -74,11 +74,21 @@ built and a measurement afterwards.
 
 ## Identities
 
-**Status: not yet curated.** `identities.json` holds the schema and the intended
-balance; every row is `"status": "pending"` and `src/manifest.py` refuses to
-build a real manifest until they are marked ready.
+**Status: curated, validated and frozen** (22 Aug 2026). All 15 rows are
+`"status": "ready"`; `src/manifest.py` refuses to build a real manifest until
+they are. The set is the **Face Research Lab London Set** (FRLL, figshare
+`10.6084/m9.figshare.5047666`, **CC BY 4.0**), 8F/7M, validated 15/15 by
+`tools/validate_identities.py`. Per-image provenance and the required attribution
+are in `identities/LICENSES.md`.
 
-Sourcing constraints, in priority order:
+FRLL was chosen over a CC0 stock source for a reason worth stating in the report:
+its participants gave **signed consent** for their images to be used in altered
+form and to illustrate research. A photograph's licence governs the photograph,
+not the person depicted, so a CC0 image carries no evidence that its subject
+agreed to appear in identity-manipulation research. CC BY 4.0 costs an
+attribution line, which is cheap.
+
+The sourcing constraints below were the selection criteria, and all are met:
 
 1. **No dataset used in InfU stage-1 pretraining.** That rules out FFHQ, CelebA,
    CelebV-HQ, CelebV-Text, VGGFace2, MillionCelebs, VFHQ, EasyPortrait and
@@ -88,8 +98,9 @@ Sourcing constraints, in priority order:
    InfU. The paper does not state where its 15 identities came from.
 
 2. **Licence-clean and documented.** Photographs of real people appear in the
-   report. Every row records `source` and `licence`; CC0 portrait photography is
-   the intended source.
+   report. Every row records `source` and `licence`. Realised as FRLL, CC BY 4.0,
+   which **requires attribution** -- see `identities/LICENSES.md` for the
+   citation that must appear wherever these images are reproduced.
 
 3. **Balanced by construction:** 8 female / 7 male, spread across three age bands
    and three skin-tone bands. The paper claims coverage of diverse identities,

@@ -23,10 +23,19 @@ memory_profile:
     8-bit is 1.48x faster per image and far more consistent (+/-0.6 s across 20
     images versus a 52 s spread for offload, whose 87.7 s maximum is first-image
     CUDA warmup -- which is why the median is the honest statistic here). The
-    67 s extra load cost amortises to under 2% over a 188-image shard. This
-    profile is now fixed for EVERY generation in the project: mixing 8-bit and
-    bf16 across runs would confound the results with a quantisation effect.
-    Worth reporting -- the paper gives no deployment cost figures at all.
+    67 s extra load cost amortises to under 2% over a 188-image shard.
+    Confirmed at scale by the pilot: 97/97 cells, median 24.8 s/img (job
+    1790388).
+    AMENDED 23 Aug 2026. This file previously said the profile was "fixed for
+    EVERY generation in the project". That is unachievable and was never true:
+    PuLID has no 8-bit path, only the XLabs fp8 checkpoint, which its own docs
+    say degrades facial detail -- precisely what ID Loss measures. The rule that
+    can be kept is the one that matters: the profile is fixed WITHIN a method,
+    so no method is ever compared against itself at two precisions. Across
+    methods the mismatch is unavoidable, so it is measured rather than assumed
+    -- see CONTEXT 6.2, which runs InfU at both precisions over identical cells
+    and takes the paired difference. Worth reporting either way: the paper gives
+    no deployment cost figures at all.
 
 methods:
   infu_aes2:  {model_version: aes_stage2}
