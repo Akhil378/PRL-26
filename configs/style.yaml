@@ -10,7 +10,7 @@ grid:
   images_total: 1152
   # MEASURED rates, not the 30 s/img guess this line used to carry:
   # InfU 8-bit 24.8 s (n=97, job 1790388) -> 4.0 GPU-h for 576 cells
-  # PuLID bf16 ~35.3 s (provisional, arm still running) -> ~5.6 GPU-h
+  # PuLID bf16 35.1 s (n=97, job 1790387)  -> 5.6 GPU-h for 576 cells
   # ~9.6 GPU-h for both methods. NOTE: this covers the MAIN GRID ONLY. The
   # sweep and calibration_control blocks below are costed nowhere and are not
   # yet implemented -- see CONTEXT 6.4.
