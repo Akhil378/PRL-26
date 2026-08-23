@@ -73,7 +73,13 @@ cluster:
   walltime_limit: "24:00:00"
   module: python/3.12-conda       # NOT 3.11-anaconda; that module does not exist
   cuda_available: [11.8.0, 12.4.1, 12.6.2, 12.8.0]
-  qos: normal                     # MaxTRES gres/gpu=50 per user, no job-count cap
+  qos: normal
+  # MEASURED 23 Aug 2026, not read from the configuration. The QOS advertises
+  # GrpTRES gres/gpu=50, but with 32 A100s idle and no other user on the
+  # partition, a 12-task array ran exactly 2 tasks and held the rest at
+  # AssocGrpGRES. The binding limit sits on a parent association this account
+  # cannot read. Plan wall-clock as (total GPU-h / 2).
+  max_concurrent_a100: 2
   quota_home_gb: 100              # /home/hpc/rlvl/rlvl159v
   quota_work_gb: 1000             # /home/woody/rlvl/rlvl159v  ($WORK)
   observed_queue_wait: "highly variable: 3.5 h (Thu evening) vs 18 min (Fri morning)"
