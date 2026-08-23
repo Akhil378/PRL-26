@@ -2,15 +2,22 @@
 #SBATCH --job-name=pulid-gen
 #SBATCH --partition=a100
 #SBATCH --gres=gpu:a100:1
-#SBATCH --time=02:19:00
-#SBATCH --array=0-7
+#SBATCH --time=01:50:00
+#SBATCH --array=0-11
 #SBATCH --output=logs/%x_%A_%a.out
 #SBATCH --error=logs/%x_%A_%a.err
 #SBATCH --export=NONE
 
 # Part 1 generation, PuLID-FLUX baseline.
 # Submit with:  sbatch.tinygpu slurm/gen_pulid.sbatch
-# Verify the FluxGenerator signature with --limit 2 before launching the array.
+#
+# The generator signature is verified (probe 1790289) and the pilot ran 97 cells
+# clean at 35.1 s/img, which is what sizes this array: 12 shards of 125 cells at
+# ~1:50, matching gen_infu.sbatch so both methods trickle through the shared GPU
+# pool at the same granularity.
+#
+# bf16 + offload is PuLID's only option -- it has no 8-bit path -- which is what
+# forced the 6.2 decision to run InfU at bf16 too. See CONTEXT 6.2.
 
 unset SLURM_EXPORT_ENV
 
@@ -39,4 +46,4 @@ python src/gen_pulid.py \
   --out      "$PRL/results/images/pulid" \
   --pulid-repo "$PRL/PuLID" \
   --offload \
-  --shard "$SLURM_ARRAY_TASK_ID" --num-shards 8
+  --shard "$SLURM_ARRAY_TASK_ID" --num-shards 12

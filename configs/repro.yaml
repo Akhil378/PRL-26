@@ -11,10 +11,24 @@ generation:
   infusenet_guidance_end: 1.0
 
 memory_profile:
-  # MEASURED 22 Aug 2026, A100 40GB, 20 images each, 864x1152 / 30 steps,
-  # real manifest and curated reference portraits (jobs 1789377 / 1789378).
-  chosen: quantize_8bit
-  measured_sec_per_image: 25.0
+  # CHANGED 23 Aug 2026, before any Part 1 image existed, on the measurement
+  # described below. The original choice was quantize_8bit at 25.0 s/img.
+  chosen: cpu_offload
+  measured_sec_per_image: 33.8      # n=97, job 1790389
+  changed_from: quantize_8bit
+  change_rationale: >
+    PuLID has no 8-bit path, so InfU at 8-bit versus PuLID at bf16 confounds the
+    headline comparison with a quantisation effect. A paired control generated
+    the same 97 cells at both precisions (jobs 1790388/1790389). The effect on
+    ID Loss is -0.0028 with a 90% CI of [-0.0123, +0.0066], which fails to
+    establish equivalence at a 0.004 margin; resolving it would need ~839 pairs,
+    or 7.9 GPU-h, against the 5.2 GPU-h of simply matching the two methods.
+    CLIPScore at both backbones and PickScore were equivalent, so the effect is
+    confined to identity fidelity. Matching at bf16 removes the confound rather
+    than bounding it, and matters more than usual because the pilot suggests the
+    result may contradict the paper's ranking -- see CONTEXT 6.2 and 6.6.
+    The 97 8-bit images are retained as the control's data in
+    results/images/pilot_infu_q8; they are NOT part of Part 1.
 
   comparison:
     quantize_8bit: {median_s: 25.0, mean_s: 25.0, min_s: 24.5, max_s: 25.7, load_s: 92}
