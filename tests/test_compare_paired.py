@@ -28,7 +28,7 @@ sys.path.insert(0, str(ROOT))
 
 from src.analysis.compare_paired import (  # noqa: E402
     load_scores, paired_stats, pairing_gain, detection_check,
-    parse_margins, margin_for,
+    parse_margins, margin_for, detection_bounds,
 )
 
 SCRIPT = ROOT / "src" / "analysis" / "compare_paired.py"
@@ -172,6 +172,52 @@ def test_margin_parsing(fails):
           f"a metric with no margin must not get a verdict, got {st['verdict']}")
 
 
+def test_detection_bounds(fails):
+    """A win built on dropping hard cells must not survive the bound.
+
+    This is the pilot's actual failure mode reduced to a fixture. Note what the
+    complete-case figure is NOT: it is already matched on the cells both arms
+    survived, so it is a fair comparison *on that subset*. The question the
+    bound asks is whether that subset generalises to the cells one arm lost --
+    and when the lost cells are the hard ones, it does not.
+    """
+    cells = [f"id{i:02d}|p001" for i in range(21)]
+    # 0-4 hard, 5-19 easy, 20 a catastrophic cell both arms survive. That last
+    # one sets the worst observed value, which is what a miss gets charged.
+    loss_a = [0.9] * 5 + [0.30] * 15 + [1.00]
+    loss_b = [0.85] * 5 + [0.28] * 15 + [1.00]
+    A = pd.DataFrame({"cell": cells, "id_loss_antelope": loss_a,
+                      "face_detected": True}).set_index("cell")
+    B = pd.DataFrame({"cell": cells, "id_loss_antelope": loss_b,
+                      "face_detected": True}).set_index("cell")
+    idx = pd.Index(cells)
+
+    bd = detection_bounds(A, B, idx, "id_loss_antelope", "A", "B")
+    check(fails, bd["diff_complete"] < 0, "B should win on complete data")
+    check(fails, bd["sign_stable"],
+          "with nothing missing the bound cannot flip")
+
+    # B now fails to produce a face on the 5 hard cells.
+    B2 = B.copy()
+    B2.loc[cells[:5], "id_loss_antelope"] = np.nan
+    B2.loc[cells[:5], "face_detected"] = False
+    bd2 = detection_bounds(A, B2, idx, "id_loss_antelope", "A", "B")
+
+    check(fails, bd2["n_missing_b"] == 5 and bd2["n_missing_a"] == 0,
+          f"missing counts wrong: {bd2['n_missing_a']}/{bd2['n_missing_b']}")
+    check(fails, bd2["n_complete"] == 16,
+          f"complete-case n should be 16, got {bd2['n_complete']}")
+    check(fails, bd2["diff_complete"] < 0,
+          "complete case should still show B ahead -- that is the trap")
+    check(fails, bd2["diff_imputed"] > 0,
+          f"worst-case imputation should reverse it, got "
+          f"{bd2['diff_imputed']:+.4f}")
+    check(fails, not bd2["sign_stable"],
+          "a ranking that flips between the bounds must be flagged unstable")
+    check(fails, np.isclose(bd2["worst_observed"], 1.00),
+          f"worst observed should be 1.00, got {bd2['worst_observed']}")
+
+
 def test_guards(fails, tmp: Path):
     """Malformed inputs must fail loudly rather than pair the wrong things."""
     dup = pd.DataFrame({"cell": ["x|p1", "x|p1"], "method": "m",
@@ -256,6 +302,7 @@ def main():
         test_pairing_gain(fails)
         test_detection_selection_effect(fails)
         test_margin_parsing(fails)
+        test_detection_bounds(fails)
         test_guards(fails, tmp)
         sample = test_end_to_end(fails, tmp)
 
@@ -266,9 +313,8 @@ def main():
         return 1
     print("paired-comparison tests passed (scipy agreement, all three "
           "verdicts, min_margin,")
-    print(" pairing gain, McNemar selection check, per-metric margins, "
-          "malformed-input")
-    print(" guards, CLI end to end)")
+    print(" pairing gain, McNemar selection check, per-metric margins,")
+    print(" detection bounds, malformed-input guards, CLI end to end)")
     if sample:
         print("\n--- sample CLI output ---")
         print(sample)

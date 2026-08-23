@@ -220,6 +220,46 @@ def margin_for(margins: dict, metric: str):
     return margins.get(metric, margins.get("*"))
 
 
+def detection_bounds(A: pd.DataFrame, B: pd.DataFrame, cells, metric: str,
+                     la: str, lb: str) -> dict:
+    """Bound a lower-is-better metric against differential detection failure.
+
+    ID Loss is undefined when no face is detected, and the standard handling --
+    drop those cells -- is exactly what makes a differential failure rate
+    dangerous. A method that fails on the cells it finds hardest is REWARDED by
+    complete-case analysis: its average is taken over the subset it managed,
+    while its rival is judged on that subset plus the hard cells it survived.
+
+    The bound is the honest answer when the rates differ. Charging every
+    undetected cell the worst value observed anywhere is deliberately
+    pessimistic and is not an estimate of the truth; it is the other end of an
+    interval whose optimistic end is the complete-case figure. If a method wins
+    at both ends, the win is real. If the ranking flips between them, the data
+    does not support a ranking at all, and saying so is the result.
+    """
+    va = pd.to_numeric(A.loc[cells, metric], errors="coerce")
+    vb = pd.to_numeric(B.loc[cells, metric], errors="coerce")
+    both = va.notna() & vb.notna()
+    if both.sum() < 3:
+        return {}
+    worst = float(pd.concat([va, vb]).max())
+    out = {
+        "complete_a": float(va[both].mean()), "complete_b": float(vb[both].mean()),
+        "n_complete": int(both.sum()),
+        "n_missing_a": int(va.isna().sum()), "n_missing_b": int(vb.isna().sum()),
+        "worst_observed": worst,
+        "imputed_a": float(va.fillna(worst).mean()),
+        "imputed_b": float(vb.fillna(worst).mean()),
+    }
+    out["diff_complete"] = out["complete_b"] - out["complete_a"]
+    out["diff_imputed"] = out["imputed_b"] - out["imputed_a"]
+    # "Survives" means the sign of the difference is the same at both ends.
+    out["sign_stable"] = bool(
+        (out["diff_complete"] > 0) == (out["diff_imputed"] > 0))
+    out["label_a"], out["label_b"] = la, lb
+    return out
+
+
 def fmt_ci(ci) -> str:
     return f"[{ci[0]:+.4f}, {ci[1]:+.4f}]"
 
@@ -247,6 +287,11 @@ def main():
     ap.add_argument("--tost-note", action="store_true",
                     help="Print the reminder on why a non-significant t-test is "
                          "not evidence of equivalence.")
+    ap.add_argument("--bounds", action="store_true",
+                    help="For lower-is-better metrics, also report the "
+                         "worst-case-imputation bound against differential "
+                         "detection failure. Use whenever the two arms' "
+                         "face_detected rates differ.")
     ap.add_argument("--out-json", default=None)
     a = ap.parse_args()
 
@@ -356,6 +401,33 @@ def main():
         st.update(dropped=dropped, mean_a=float(av.mean()), mean_b=float(bv.mean()),
                   **{f"pairing_{k}": v for k, v in gain.items()})
         report["metrics"][m] = st
+
+    if a.bounds:
+        print("\n--- detection bounds (complete-case vs worst-case imputation) ---")
+        print("    Complete-case drops undetected cells, which flatters whichever")
+        print("    method fails more often on hard cells. The bound charges every")
+        print("    miss the worst value observed; the truth lies between.")
+        for m in [x for x in metrics if x in LOWER_IS_BETTER
+                  and x in A.columns and x in B.columns]:
+            bd = detection_bounds(A, B, common, m, a.label_a, a.label_b)
+            if not bd:
+                continue
+            print(f"\n  {m}")
+            print(f"    complete case  {a.label_a} {bd['complete_a']:.4f}   "
+                  f"{a.label_b} {bd['complete_b']:.4f}   "
+                  f"diff {bd['diff_complete']:+.4f}   (n={bd['n_complete']})")
+            print(f"    worst-case     {a.label_a} {bd['imputed_a']:.4f}   "
+                  f"{a.label_b} {bd['imputed_b']:.4f}   "
+                  f"diff {bd['diff_imputed']:+.4f}   "
+                  f"(missing {bd['n_missing_a']}/{bd['n_missing_b']}, "
+                  f"charged {bd['worst_observed']:.4f})")
+            if bd["sign_stable"]:
+                print("    VERDICT  ranking SURVIVES the bound")
+            else:
+                print("    VERDICT  ranking FLIPS between the bounds -- the")
+                print("             advantage is not separable from the")
+                print("             difference in detection rate")
+            report.setdefault("bounds", {})[m] = bd
 
     # Closing line: the point of the whole run, restated where it cannot get
     # lost between the per-metric blocks.
