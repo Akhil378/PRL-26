@@ -35,6 +35,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import torch
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -138,6 +139,37 @@ def main():
                                                 pretrained_model=a.pulid_weights,
                                                 version=a.pulid_version))
     print(f"pipeline ready in {time.time()-t0:.0f} s", flush=True)
+
+    # MEASURED FIX -- do not remove without re-reading this.
+    #
+    # app_flux.py:154 wraps the VAE decode in torch.autocast(cuda, bfloat16),
+    # which casts the decoder's activations to bf16. torch 2.0.1+cu117 has no
+    # CUDA kernel for nearest-neighbour upsample in bf16, so the decoder's
+    # first Upsample raises
+    #     "upsample_nearest2d_out_frame" not implemented for 'BFloat16'
+    # at autoencoder.py:104 -- AFTER all 30 denoising steps have completed.
+    # Every failed cell was a finished image thrown away on the last step,
+    # which is why the failures cost a full 41.8 s each (job 1789499).
+    #
+    # It is the GPU kernel that is missing, not a stray CPU tensor: bf16
+    # nearest upsample on the CPU works fine in this build, verified directly.
+    # So "move the module to cuda" is exactly the wrong fix.
+    #
+    # The AE's own parameters are fp32 (verified: load_ae builds under
+    # torch.device(cpu) at default dtype and load_state_dict copies rather
+    # than assigns, so the bf16 checkpoint never changes the param dtype).
+    # bf16 here was only ever an autocast artefact, so decoding in fp32 matches
+    # the weights and is if anything more accurate. The cost is one decode per
+    # image, not one per timestep, so it is immaterial next to 30 steps.
+    _decode = gen.ae.decode
+
+    def decode_fp32(z):
+        with torch.autocast(device_type="cuda", enabled=False):
+            return _decode(z.float())
+
+    gen.ae.decode = decode_fp32
+    print("VAE decode pinned to fp32 (bf16 nearest-upsample has no CUDA kernel "
+          "in torch 2.0.1)", flush=True)
 
     log = RunLog(out / f"log_shard{a.shard}.csv")
     failures = 0
