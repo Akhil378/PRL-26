@@ -21,12 +21,24 @@
 #
 #   sbatch.tinygpu slurm/pilot.sbatch infu  "--quantize-8bit"
 #   sbatch.tinygpu slurm/pilot.sbatch pulid "--offload"
+#   sbatch.tinygpu slurm/pilot.sbatch infu  "--cpu-offload" 15 control_infu_bf16
+#
+# The third form is the 6.2 precision control: the SAME 100 cells as the
+# 8-bit arm, hence the same seeds and the same latents, so the quantisation
+# effect can be taken as a paired difference instead of argued about.
 
 unset SLURM_EXPORT_ENV
 
 METHOD="${1:?usage: pilot.sbatch <infu|pulid> \"<flags>\"}"
 FLAGS="${2:-}"
 SHARDS="${3:-30}"        # 1500/30 = 50 cells
+# Optional 4th argument: override the output directory leaf. The default
+# lands in the REAL Part 1 output, which is the whole point of the pilot --
+# its images count. A control arm must NOT do that: regenerating the same
+# cells at a different precision would collide with the real run's files and
+# be skipped as already-done. Pass a name here for anything that is a
+# measurement about the pipeline rather than a contribution to Part 1.
+OUTNAME="${4:-}"
 
 module load python/3.12-conda
 
@@ -47,7 +59,7 @@ if [ "$METHOD" = "infu" ]; then
   conda activate "$WORK/envs/infu"
   python src/gen_infu.py \
     --manifest benchmark/manifest_repro.parquet \
-    --out "$PRL/results/images/infu_aes2" \
+    --out "$PRL/results/images/${OUTNAME:-infu_aes2}" \
     --infu-repo "$PRL/InfiniteYou" \
     --insightface-root "$INSIGHTFACE_HOME" \
     --model-version aes_stage2 \
@@ -56,7 +68,7 @@ else
   conda activate "$WORK/envs/pulid"
   python src/gen_pulid.py \
     --manifest benchmark/manifest_repro.parquet \
-    --out "$PRL/results/images/pulid" \
+    --out "$PRL/results/images/${OUTNAME:-pulid}" \
     --pulid-repo "$PRL/PuLID" \
     --shard 0 --num-shards "$SHARDS" $FLAGS
 fi
