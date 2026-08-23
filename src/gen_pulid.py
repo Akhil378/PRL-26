@@ -30,6 +30,7 @@ import argparse
 import json
 import sys
 import time
+import traceback
 from pathlib import Path
 
 import numpy as np
@@ -139,6 +140,7 @@ def main():
     print(f"pipeline ready in {time.time()-t0:.0f} s", flush=True)
 
     log = RunLog(out / f"log_shard{a.shard}.csv")
+    failures = 0
     for n, r in enumerate(todo.itertuples(), 1):
         t = time.time()
         try:
@@ -166,6 +168,15 @@ def main():
             status = f"error:{type(e).__name__}:{str(e)[:80]}"
             (out / (cell_to_file(r.cell) + ".part")).unlink(missing_ok=True)
             print(f"  [{r.cell}] {status}", flush=True)
+            # Print the full traceback for the first few failures. The 80-char
+            # status is enough to spot a pattern across 1500 cells but useless
+            # for diagnosis, and re-running a GPU job just to learn which line
+            # raised costs a queue wait. Capped so a systematically failing
+            # shard cannot bury the log.
+            if failures < 3:
+                traceback.print_exc()
+                sys.stdout.flush()
+            failures += 1
         log.add(r.cell, status, time.time() - t)
         if n % 25 == 0:
             print("  " + log.progress(n, len(todo)), flush=True)
