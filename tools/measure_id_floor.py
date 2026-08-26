@@ -230,9 +230,9 @@ def main():
         print("  the same appearance shift, so the floor should include it.")
 
     print("\nNOTE: the CLIP photorealism drop is a poor axis here -- it moves in")
-    print("the third decimal while the floor moves by 0.77, and pencil_colour")
-    print("even scores as MORE photographic. Report the floor by filter level,")
-    print("and treat the painterly band (stylize_25..60) as the relevant range.")
+    print("the third decimal while the floor moves by 0.43. Report the floor by")
+    print("filter level, and treat the painterly band (stylize_25..60) as the")
+    print("range relevant to Part 2.")
 
     print("\nREAD THIS AS A LOWER BOUND. A filter abstracts texture but keeps the")
     print("photograph's shading and structure; a diffusion model asked for a")
