@@ -1,0 +1,168 @@
+{
+ "label_a": "InfU 8-bit",
+ "label_b": "InfU bf16",
+ "file_a": "/home/woody/rlvl/rlvl159v/prl26/results/scores/infu_aes2_manifest_repro.parquet",
+ "file_b": "/home/woody/rlvl/rlvl159v/prl26/results/scores/control_infu_bf16_manifest_repro.parquet",
+ "n_common": 97,
+ "margins": {
+  "id_loss_antelope": 0.004,
+  "id_loss_buffalo": 0.004,
+  "clipscore_b32": 0.008,
+  "clipscore_l14": 0.008
+ },
+ "metrics": {
+  "id_loss_antelope": {
+   "n": 89,
+   "mean": -0.0028244196698906715,
+   "sd": 0.05365715310774396,
+   "se": 0.005687646854138527,
+   "ci95": [
+    -0.01412742261785905,
+    0.008478583278077705
+   ],
+   "ci90": [
+    -0.012279302334346268,
+    0.006630462994564926
+   ],
+   "t": -0.4965884384744329,
+   "p_two_sided": 0.6207175448596728,
+   "min_margin": 0.012279302334346268,
+   "verdict": "INCONCLUSIVE",
+   "equivalent": false,
+   "differs": false,
+   "margin": 0.004,
+   "dropped": 8,
+   "mean_a": 0.40599348973692134,
+   "mean_b": 0.4031690700670307,
+   "pairing_r": 0.9480804507076903,
+   "pairing_sd_paired": 0.05365715310774396,
+   "pairing_sd_unpaired": 0.23546133175259337,
+   "pairing_variance_gain": 4.388256143217015
+  },
+  "id_loss_buffalo": {
+   "n": 89,
+   "mean": -0.004059113813250252,
+   "sd": 0.05792696986727246,
+   "se": 0.006140246525450111,
+   "ci95": [
+    -0.01626156350084206,
+    0.008143335874341556
+   ],
+   "ci90": [
+    -0.014266377364910276,
+    0.00614814973840977
+   ],
+   "t": -0.661066912611086,
+   "p_two_sided": 0.5102964449973241,
+   "min_margin": 0.014266377364910276,
+   "verdict": "INCONCLUSIVE",
+   "equivalent": false,
+   "differs": false,
+   "margin": 0.004,
+   "dropped": 8,
+   "mean_a": 0.4264480130056317,
+   "mean_b": 0.42238889919238143,
+   "pairing_r": 0.9391378570484,
+   "pairing_sd_paired": 0.05792696986727246,
+   "pairing_sd_unpaired": 0.2336785772117264,
+   "pairing_variance_gain": 4.034020383720261
+  },
+  "clipscore_b32": {
+   "n": 97,
+   "mean": -0.00049090969193842,
+   "sd": 0.006869817771763859,
+   "se": 0.0006975243129727219,
+   "ci95": [
+    -0.001875484510094753,
+    0.0008936651262179133
+   ],
+   "ci90": [
+    -0.0016494148775301472,
+    0.0006675954936533071
+   ],
+   "t": -0.7037886462283329,
+   "p_two_sided": 0.4832679810539243,
+   "min_margin": 0.0016494148775301472,
+   "verdict": "EQUIVALENT",
+   "equivalent": true,
+   "differs": false,
+   "margin": 0.008,
+   "dropped": 0,
+   "mean_a": 0.30022163643050437,
+   "mean_b": 0.299730726738566,
+   "pairing_r": 0.9668493490352552,
+   "pairing_sd_paired": 0.006869817771763859,
+   "pairing_sd_unpaired": 0.03747078611100164,
+   "pairing_variance_gain": 5.4544075775944245
+  },
+  "clipscore_l14": {
+   "n": 97,
+   "mean": 9.176257959346181e-05,
+   "sd": 0.008270635141881049,
+   "se": 0.0008397557674528268,
+   "ci95": [
+    -0.0015751394443109003,
+    0.0017586646034978238
+   ],
+   "ci90": [
+    -0.0013029721889746787,
+    0.0014864973481616022
+   ],
+   "t": 0.10927293762065952,
+   "p_two_sided": 0.913214100468439,
+   "min_margin": 0.0014864973481616022,
+   "verdict": "EQUIVALENT",
+   "equivalent": true,
+   "differs": false,
+   "margin": 0.008,
+   "dropped": 0,
+   "mean_a": 0.2547243076194193,
+   "mean_b": 0.25481607019901276,
+   "pairing_r": 0.9573689924958879,
+   "pairing_sd_paired": 0.008270635141881049,
+   "pairing_sd_unpaired": 0.04004582071068601,
+   "pairing_variance_gain": 4.841928101495009
+  },
+  "pickscore_paper": {
+   "n": 97,
+   "mean": -0.0001868814291413323,
+   "sd": 0.0024489807698371193,
+   "se": 0.0002486563233140097,
+   "ci95": [
+    -0.0006804603298804974,
+    0.00030669747159783276
+   ],
+   "ci90": [
+    -0.0005998701015529832,
+    0.00022610724327031863
+   ],
+   "t": -0.7515651588933595,
+   "p_two_sided": 0.45415118008521566,
+   "min_margin": 0.0005998701015529832,
+   "verdict": "n/a (no margin given)",
+   "margin": null,
+   "dropped": 0,
+   "mean_a": 0.22006708459755808,
+   "mean_b": 0.21988020316841678,
+   "pairing_r": 0.9698522138627254,
+   "pairing_sd_paired": 0.0024489807698371193,
+   "pairing_sd_unpaired": 0.01406109981039592,
+   "pairing_variance_gain": 5.7416129940992215
+  }
+ },
+ "detection": {
+  "rate_a": 0.9381443298969072,
+  "rate_b": 0.9175257731958762,
+  "both": 89,
+  "neither": 6,
+  "only_a": 2,
+  "only_b": 0,
+  "p_mcnemar": 0.5,
+  "label_a": "InfU 8-bit",
+  "label_b": "InfU bf16"
+ },
+ "decision": {
+  "primary": "id_loss_antelope",
+  "verdict": "INCONCLUSIVE"
+ }
+}

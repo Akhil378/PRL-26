@@ -77,9 +77,14 @@ def t_part1_headline(S):
                      f"{PAPER['infu'][key]:.3f}" if key else "--",
                      f"{PAPER['pulid'][key]:.3f}" if key else "--"])
     rows.append(None)
-    rows.append(["Face detection rate",
-                 ms(a["face_detected"].astype(float), "%.3f"),
-                 ms(b["face_detected"].astype(float), "%.3f"), "--", "--"])
+    # A detection rate is a proportion, not a sample of a continuous quantity.
+    # Quoting the standard deviation of the 0/1 indicator would satisfy the
+    # guideline's letter and mislead: it is a deterministic function of the rate
+    # and carries no information the rate does not. Report the count instead.
+    def rate(d):
+        k = int(d["face_detected"].astype(bool).sum())
+        return f"{k / len(d):.3f} ({k}/{len(d)})"
+    rows.append(["Face detection rate", rate(a), rate(b), "--", "--"])
     return tex_table(
         "Part 1 reproduction",
         "Part 1, $n=1500$ cells per method, mean $\\pm$ standard deviation. "
@@ -90,7 +95,7 @@ def t_part1_headline(S):
         "reported as a metric in its own right because it determines which "
         "cells ID Loss can use. InfU denotes InfiniteYou (aes\\_stage2).",
         "tab:part1", ["Metric", "InfU", "PuLID", "InfU (paper)", "PuLID (paper)"],
-        rows)
+        rows, align="lccrr")
 
 
 def t_part1_strata(S):

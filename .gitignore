@@ -29,3 +29,8 @@ benchmark/.frll_cache/
 # makes this a symlink to $WORK because the FLUX single-file weight alone is
 # 23.8 GB and $HOME is a 100 GB quota.
 /models
+
+# Score tables copied off the cluster for the report's table generator. They are
+# small and irreplaceable, so they are tracked deliberately -- but the parquets
+# are binary and .gitattributes already marks them as such.
+!results-backup/scores/*.parquet
