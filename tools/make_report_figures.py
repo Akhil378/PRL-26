@@ -60,7 +60,10 @@ def fig_floor(floor_df, img_dir, out, iid=None):
         # than the shirt and the backdrop.
         im = Image.open(cand[0]).convert("RGB")
         w, h = im.size
-        im = im.crop((int(w * 0.18), int(h * 0.06), int(w * 0.82), int(h * 0.62)))
+        # Forehead to chin. The panel has to show the whole face: the claim the
+        # figure makes is that a reader recognises the same person throughout,
+        # and a crop that truncates the jaw undercuts exactly that.
+        im = im.crop((int(w * 0.25), int(h * 0.15), int(w * 0.75), int(h * 0.85)))
         ax.imshow(im)
         ax.set_xticks([])
         ax.set_yticks([])
