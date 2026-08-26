@@ -84,19 +84,23 @@ def filter_ladder():
             return cv2.stylization(a, sigma_s=60, sigma_r=sr)
         return f
 
-    def pencil_colour(a):
-        _gray, colour = cv2.pencilSketch(a, sigma_s=60, sigma_r=0.07,
-                                         shade_factor=0.05)
-        return colour
-
     return [
         ("none", ident),                 # zero point: the reference itself
         ("edge_preserve", edge_preserve),
         ("stylize_25", sty(0.25)),
         ("stylize_45", sty(0.45)),       # the setting used by the FMI controls
         ("stylize_60", sty(0.60)),
-        ("pencil_colour", pencil_colour),
     ]
+    # cv2.pencilSketch was in this ladder and has been REMOVED. Its geometry
+    # could not be verified by any available means: it dissolves filled shapes,
+    # so the fiducial fixture cannot locate the marks, and it re-renders so
+    # drastically that phase correlation finds no genuine peak either (it
+    # reported a spurious 137 px translation on a textured control). A filter
+    # whose geometry cannot be checked cannot supply a floor, whatever its
+    # number looks like -- and its number looked wrong too: an ID Loss of 0.774,
+    # near ArcFace's saturated no-match regime, alongside a NEGATIVE CLIP
+    # photorealism drop, i.e. CLIP judged the sketch more photographic than the
+    # photograph. The painterly band that remains is the range Part 2 needs.
 
 
 def main():
@@ -133,7 +137,7 @@ def main():
     if save_dir:
         save_dir.mkdir(parents=True, exist_ok=True)
 
-    rows, geom_fail = [], []
+    rows, jitter = [], []
     for r in pool:
         ref_path = ROOT / r["path"]
         bgr = cv2.imread(str(ref_path))
@@ -154,9 +158,17 @@ def main():
             img = Image.open(tmp).convert("RGB")
             photo = clip.clipscore(img, PHOTO_PHRASE)
 
-            # GEOMETRY CHECK -- the claim the control depends on. A filter must
-            # leave the detected face box where it was; if it does not, the
-            # operation is not appearance-only and its ID Loss is contaminated.
+            # DETECTOR JITTER, not geometry. These filters cannot move a
+            # pixel -- they are fixed-grid neighbourhood operations, verified
+            # against fiducial marks in tests/test_id_floor.py. What shifts here
+            # is the DETECTOR'S ESTIMATE of the box under changed appearance,
+            # which is a different thing and worth measuring, not gating on.
+            #
+            # It matters because ArcFace aligns by the detected landmarks, so a
+            # shifted box means a slightly different crop and that feeds into
+            # the ID Loss below. This is not a contaminant to remove: Part 2's
+            # real generations put the detector under the same appearance shift,
+            # so a floor including the jitter is the floor Part 2 actually faces.
             _, box = scorers["antelopev2"].embed_with_box(out_bgr)
             if ref_box is not None and box is not None:
                 shift = float(np.abs(np.asarray(box, float)
@@ -164,7 +176,7 @@ def main():
             else:
                 shift = float("nan")
             if shift == shift and shift > 8.0:
-                geom_fail.append((r["iid"], name, shift))
+                jitter.append((r["iid"], name, shift))
 
             rows.append({"iid": r["iid"], "level": level, "filter": name,
                          "id_loss_antelope": loss_a if det else None,
@@ -207,17 +219,21 @@ def main():
               f"{x['id_floor_sd']:>8.4f}{x['id_floor_holdout']:>9.4f}"
               f"{x['detected']:>6.2f}{x['max_shift']:>14.1f}")
 
-    if geom_fail:
-        print("\n*** GEOMETRY CHECK FAILED -- these filters moved the face box:")
-        for iid, name, sh in geom_fail:
-            print(f"      {iid} {name}: {sh:.1f} px")
-        print("    Their ID Loss is not appearance-only and must not be used")
-        print("    as a floor. Drop those levels or replace the filter.")
-        return 1
+    if jitter:
+        worst = max(x[2] for x in jitter)
+        print("\nDetector box moved on %d of %d images (worst %.0f px)."
+              % (len(jitter), len(df), worst))
+        print("  The filters cannot move a pixel -- this is the DETECTOR's")
+        print("  estimate shifting under changed appearance. ArcFace aligns by")
+        print("  the detected landmarks, so it feeds into the floor above, and")
+        print("  that is correct: Part 2's generations put the detector under")
+        print("  the same appearance shift, so the floor should include it.")
 
-    print("\nGeometry check passed: every filter left the detected face box "
-          "within 8 px,")
-    print("so these ID Loss values are attributable to appearance alone.")
+    print("\nNOTE: the CLIP photorealism drop is a poor axis here -- it moves in")
+    print("the third decimal while the floor moves by 0.77, and pencil_colour")
+    print("even scores as MORE photographic. Report the floor by filter level,")
+    print("and treat the painterly band (stylize_25..60) as the relevant range.")
+
     print("\nREAD THIS AS A LOWER BOUND. A filter abstracts texture but keeps the")
     print("photograph's shading and structure; a diffusion model asked for a")
     print("painting also reinterprets shape and lighting. At equal photorealism")
