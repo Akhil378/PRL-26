@@ -34,3 +34,14 @@ benchmark/.frll_cache/
 # small and irreplaceable, so they are tracked deliberately -- but the parquets
 # are binary and .gitattributes already marks them as such.
 !results-backup/scores/*.parquet
+# LaTeX build products. These were tracked, and because the cluster is where the
+# report is compiled, every build left them modified there and made
+# `git pull --ff-only` abort. The abort is easy to miss: git prints the error on
+# stderr and "Updating <a>..<b>" on stdout, so a `2>&1 | tail -1` shows the
+# reassuring line and the checkout silently stays behind. Rebuild with
+# `bash tools/build_report.sh`.
+report/report.pdf
+report/report.aux
+report/report.log
+report/report.out
+report/report.toc
