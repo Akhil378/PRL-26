@@ -235,36 +235,53 @@ def t_floor(S):
 
 
 def t_part2(S):
+    """Styles across the columns rather than down the rows.
+
+    The long form needed eighteen rows to say what six rows and three columns
+    say, and it separated the two quantities that have to be read together:
+    a method that declines to adopt a style preserves identity for free, so the
+    ID Loss and style-adoption lines for one method belong next to each other.
+    """
+    STYLES = ["oil_painting", "render_3d", "watercolour"]
     rows = []
     for method in ["infu", "pulid"]:
         j = json.loads((S / f"part2_{method}.json").read_text())
         name = "InfU" if method == "infu" else "PuLID"
         for metric, label in [("id_loss_antelope", "ID Loss"),
                               ("style_score", "Style adoption"),
-                              ("fmi_photo", "FMI (photo form)")]:
-            for r in j["metrics"].get(metric, []):
+                              ("fmi_photo", "FMI")]:
+            by_style = {r["style"]: r for r in j["metrics"].get(metric, [])}
+            cells = []
+            for st in STYLES:
+                r = by_style.get(st)
+                if r is None:
+                    cells.append("--")
+                    continue
                 star = "$^{*}$" if r.get("significant") else ""
-                rows.append([name, label, r["style"].replace("_", "\\_"),
-                             r["n"], f"{r['median']:+.4f}{star}",
-                             f"[{r['ci'][0]:+.4f}, {r['ci'][1]:+.4f}]"])
+                cells.append(f"${r['median']:+.4f}${star}")
+            rows.append([name, label] + cells)
         rows.append(None)
     if rows and rows[-1] is None:
         rows.pop()
     return tex_table(
         "Part 2 paired style deltas",
-        "Part 2, styled minus photoreal control, matched within cell so that "
-        "both share an identity, a base prompt and a latent. Values are "
-        "medians with bootstrap 95\\% confidence intervals; the test is the "
-        "Wilcoxon signed-rank test and $^{*}$ marks significance after Holm "
-        "correction across the three styles. FMI denotes the Face Masking "
-        "Index, for which a positive value indicates the face resisted "
-        "stylisation more than the background did. Style adoption is CLIP "
-        "similarity to the condition's own style phrase. The ID Loss and "
-        "style-adoption rows must be read together: a method that does not "
-        "adopt a style preserves identity trivially.",
+        "Part 2, styled minus photorealistic control, matched within cell so "
+        "that both share an identity, a base prompt and a latent. Entries are "
+        "Hodges--Lehmann medians of the paired difference; $^{*}$ marks "
+        "significance under the Wilcoxon signed-rank test after Holm "
+        "correction across the three styles. Bootstrap 95\% intervals are "
+        "omitted for space and are reproduced by "
+        "\texttt{src/analysis/style\_deltas.py}. FMI is the Face Masking "
+        "Index, positive when the face resisted stylisation more than the "
+        "background did; style adoption is CLIP similarity to the condition's "
+        "own style phrase. The two must be read together, because a method "
+        "that does not adopt a style preserves identity trivially: $n$ is 144 "
+        "per cell for style adoption, 126 to 137 for ID Loss and 102 to 114 "
+        "for FMI, the reductions being cells with no detected face or no "
+        "usable background region.",
         "tab:part2",
-        ["Method", "Metric", "Style", "$n$", "Median $\\Delta$", "95\\% CI"],
-        rows, align="llrrrr")
+        ["Method", "Metric", "Oil painting", "3D render", "Watercolour"],
+        rows, align="llrrr")
 
 
 def main():
