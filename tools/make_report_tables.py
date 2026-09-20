@@ -99,21 +99,87 @@ def t_part1_headline(S):
 
 
 def t_part1_strata(S):
+    """Both methods, because the composition argument needs both.
+
+    Showing only InfU leaves open that the stratum pattern is a property of InfU
+    rather than of the benchmark. If both methods degrade on the same axis, the
+    axis is doing the work.
+    """
     a = pd.read_parquet(S / "infu_aes2_manifest_repro.parquet")
+    b = pd.read_parquet(S / "pulid_manifest_repro.parquet")
     rows = []
     for stratum in ["closeup", "waist", "full"]:
-        d = a[a["face_size"] == stratum]
-        rows.append([stratum, len(d), ms(d["face_detected"].astype(float), "%.3f"),
-                     ms(d["id_loss_antelope"]), ms(d["clipscore_b32"])])
+        da, db = a[a["face_size"] == stratum], b[b["face_size"] == stratum]
+        rows.append([stratum, len(da),
+                     ms(da["face_detected"].astype(float), "%.3f"),
+                     ms(da["id_loss_antelope"]),
+                     ms(db["face_detected"].astype(float), "%.3f"),
+                     ms(db["id_loss_antelope"])])
     return tex_table(
         "Part 1 by face size",
-        "InfU results stratified by the face-size axis of the benchmark, mean "
-        "$\\pm$ standard deviation. The reproduction gap against the paper is "
-        "concentrated in the full-body stratum, which comprises 34\\% of the "
-        "benchmark by design. The paper varies face size but does not publish "
-        "its marginals, so a differently weighted benchmark would report a "
-        "different absolute ID Loss for the same model.",
-        "tab:strata", ["Face size", "$n$", "Detection", "ID Loss", "CLIPScore"],
+        "Both methods stratified by the face-size axis of the benchmark, mean "
+        "$\pm$ standard deviation. Detection and identity loss degrade together "
+        "along the same axis for both methods, which identifies the axis rather "
+        "than either implementation as the source. The full-body stratum is "
+        "34\% of the benchmark by design; the original work varies face size "
+        "but does not publish its marginals, so a differently weighted benchmark "
+        "reports a different absolute ID Loss for an identical model. Note that "
+        "the close-up stratum alone remains well above the published overall "
+        "mean, so composition accounts for part of the gap and not all of it.",
+        "tab:strata",
+        ["Face size", "$n$", "Det.\ InfU", "ID Loss InfU",
+         "Det.\ PuLID", "ID Loss PuLID"],
+        rows)
+
+
+def t_controls(S):
+    """The two late controls: authors' identities, and the text-only ceiling.
+
+    Returns None when neither has been scored yet, so the table simply does not
+    appear rather than the build failing.
+    """
+    pid_f = S / "paperid_infu_manifest_paperid.parquet"
+    ceil_f = S / "ceiling_prompts.parquet"
+    if not pid_f.exists() and not ceil_f.exists():
+        return None
+
+    bench = pd.read_parquet(S / "infu_aes2_manifest_repro.parquet")
+    rows = []
+
+    if pid_f.exists():
+        pid = pd.read_parquet(pid_f)
+        rows.append(["InfU, this benchmark's identities (FRLL)", len(bench),
+                     ms(bench["face_detected"].astype(float), "%.3f"),
+                     ms(bench["id_loss_antelope"]), "--"])
+        rows.append(["InfU, the authors' own example portraits", len(pid),
+                     ms(pid["face_detected"].astype(float), "%.3f"),
+                     ms(pid["id_loss_antelope"]), "--"])
+        rows.append(None)
+
+    if ceil_f.exists():
+        ceil = pd.read_parquet(ceil_f)
+        infu_c = ms(bench["clipscore_b32"])
+        try:
+            pul = pd.read_parquet(S / "pulid_manifest_repro.parquet")
+            pul_c = ms(pul["clipscore_b32"])
+        except Exception:                      # noqa: BLE001
+            pul_c = "--"
+        rows.append(["FLUX.1-dev, text only (ceiling)", len(ceil), "--", "--",
+                     ms(ceil["clipscore_b32"])])
+        rows.append(["InfU", len(bench), "--", "--", infu_c])
+        rows.append(["PuLID", "--", "--", "--", pul_c])
+
+    return tex_table(
+        "Late controls",
+        "Two controls added after the main runs. The upper block isolates the "
+        "identity set: the authors' own example portraits are the only "
+        "identities whose provenance is certain, and every other factor is held "
+        "fixed. The lower block gives the text-only CLIPScore ceiling on this "
+        "benchmark, which is the quantity the original work's text-alignment "
+        "claim is stated against; it reports closing 66.7\% of the gap between "
+        "the baseline and that ceiling.",
+        "tab:controls",
+        ["Condition", "$n$", "Detection", "ID Loss", "CLIPScore"],
         rows)
 
 
@@ -212,13 +278,17 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
 
     builders = [("part1", t_part1_headline), ("strata", t_part1_strata),
-                ("bounds", t_bounds), ("floor", t_floor), ("part2", t_part2)]
+                ("bounds", t_bounds), ("floor", t_floor), ("part2", t_part2),
+                ("controls", t_controls)]
     made = []
     for name, fn in builders:
         try:
             tex = fn(S)
         except FileNotFoundError as e:
             print(f"  skip {name}: missing {Path(str(e).split()[-1]).name}")
+            continue
+        if tex is None:
+            print(f"  skip {name}: inputs not scored yet")
             continue
         (out / f"{name}.tex").write_text(tex, encoding="ascii")
         made.append(name)
