@@ -158,16 +158,26 @@ def t_controls(S):
 
     if ceil_f.exists():
         ceil = pd.read_parquet(ceil_f)
+        # Part 1's CLIPScore mean is over 1500 cells, in which a prompt appears
+        # once per identity paired with it. The ceiling has one image per
+        # prompt. Repeating each prompt by its Part 1 weight puts the two means
+        # on the same footing; the plain mean over 200 prompts does not.
+        n_prompts = len(ceil)
+        if "weight" in ceil.columns:
+            ceil = ceil.loc[ceil.index.repeat(ceil["weight"].astype(int))]
         infu_c = ms(bench["clipscore_b32"])
         try:
             pul = pd.read_parquet(S / "pulid_manifest_repro.parquet")
-            pul_c = ms(pul["clipscore_b32"])
+            pul_n, pul_c = len(pul), ms(pul["clipscore_b32"])
         except Exception:                      # noqa: BLE001
-            pul_c = "--"
-        rows.append(["FLUX.1-dev, text only (ceiling)", len(ceil), "--", "--",
+            pul_n, pul_c = "--", "--"
+        # n is the number of images: one per prompt for the ceiling, one per
+        # cell for the two methods. The ceiling mean is weighted to the Part 1
+        # prompt distribution, so the three are comparable despite the n.
+        rows.append([r"FLUX.1-dev, text only (ceiling)", n_prompts, "--", "--",
                      ms(ceil["clipscore_b32"])])
         rows.append(["InfU", len(bench), "--", "--", infu_c])
-        rows.append(["PuLID", "--", "--", "--", pul_c])
+        rows.append(["PuLID", pul_n, "--", "--", pul_c])
 
     return tex_table(
         "Late controls",
@@ -177,7 +187,10 @@ def t_controls(S):
         "fixed. The lower block gives the text-only CLIPScore ceiling on this "
         "benchmark, which is the quantity the original work's text-alignment "
         "claim is stated against; it reports closing 66.7\% of the gap between "
-        "the baseline and that ceiling.",
+        "the baseline and that ceiling, measured on its own unreleased test "
+        "set. One text-only image is generated per prompt and weighted by the "
+        "number of Part 1 cells using that prompt, so the ceiling mean and the "
+        "Part 1 means are taken over the same prompt distribution.",
         "tab:controls",
         ["Condition", "$n$", "Detection", "ID Loss", "CLIPScore"],
         rows)
