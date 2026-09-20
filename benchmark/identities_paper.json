@@ -1,0 +1,24 @@
+[
+ {
+  "iid": "pid_w",
+  "gender": "female",
+  "age_band": "unknown",
+  "ethnicity": "unknown",
+  "path": "benchmark/identities_paper/pid_w.jpg",
+  "source": "bytedance/InfiniteYou assets/examples/woman.jpg",
+  "licence": "see upstream repository",
+  "status": "ready",
+  "part2": false
+ },
+ {
+  "iid": "pid_m",
+  "gender": "male",
+  "age_band": "unknown",
+  "ethnicity": "unknown",
+  "path": "benchmark/identities_paper/pid_m.jpg",
+  "source": "bytedance/InfiniteYou assets/examples/man.jpg",
+  "licence": "see upstream repository",
+  "status": "ready",
+  "part2": false
+ }
+]
