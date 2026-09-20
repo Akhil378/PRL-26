@@ -271,7 +271,7 @@ def t_part2(S):
         "significance under the Wilcoxon signed-rank test after Holm "
         "correction across the three styles. Bootstrap 95\% intervals are "
         "omitted for space and are reproduced by "
-        "\texttt{src/analysis/style\_deltas.py}. FMI is the Face Masking "
+        "\\texttt{src/analysis/style\\_deltas.py}. FMI is the Face Masking "
         "Index, positive when the face resisted stylisation more than the "
         "background did; style adoption is CLIP similarity to the condition's "
         "own style phrase. The two must be read together, because a method "
