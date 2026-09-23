@@ -88,6 +88,11 @@ def select(frames, D):
     return s, med
 
 
+def signed(v: float) -> str:
+    """+0.085 or \u22120.107: a typographic minus, as the report typesets one."""
+    return f"{v:+.3f}".replace("-", "\u2212")
+
+
 def open_panel(path: Path, size):
     from PIL import Image
     im = Image.open(path).convert("RGB")
@@ -115,9 +120,9 @@ def build(frames, D, iid, bp, args, out: Path):
     # losslessly, so resolution is paid for in megabytes.
     PW, PH = 300, 400
 
-    fig = plt.figure(figsize=(6.3, 3.95))
-    gs = GridSpec(2, 5, figure=fig, wspace=0.06, hspace=0.34,
-                  left=0.01, right=0.99, top=0.93, bottom=0.07)
+    fig = plt.figure(figsize=(6.3, 4.15))
+    gs = GridSpec(2, 5, figure=fig, wspace=0.06, hspace=0.42,
+                  left=0.01, right=0.99, top=0.93, bottom=0.09)
 
     ax = fig.add_subplot(gs[:, 0])
     ax.imshow(square_reference(ref_path, 400))
@@ -147,9 +152,11 @@ def build(frames, D, iid, bp, args, out: Path):
                       & (D["base_pid"] == bp)].set_index("metric")["delta"]
                 # D.style would be DataFrame.style, pandas' Styler, and match
                 # nothing: columns are indexed by name throughout this block.
-                a.set_xlabel(f"\u0394style {q['style_score']:+.3f}   "
-                             f"\u0394ID {q['id_loss_antelope']:+.3f}",
-                             fontsize=7.5)
+                # Two lines: side by side, the pair is wider than a panel and
+                # collides with the next one at 7.5 pt.
+                a.set_xlabel(f"\u0394style {signed(q['style_score'])}\n"
+                             f"\u0394ID {signed(q['id_loss_antelope'])}",
+                             fontsize=7.5, linespacing=1.25)
 
     pdf = out / "fig_style_grid.pdf"
     fig.savefig(pdf, format="pdf", dpi=240)
