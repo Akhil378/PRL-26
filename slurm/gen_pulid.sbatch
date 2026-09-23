@@ -9,7 +9,13 @@
 #SBATCH --export=NONE
 
 # Part 1 generation, PuLID-FLUX baseline.
-# Submit with:  sbatch.tinygpu slurm/gen_pulid.sbatch
+# Submit with:  sbatch.tinygpu slurm/gen_pulid.sbatch [ID_START] [OUT_NAME]
+#   no args        start_step 4 into results/images/pulid (Part 1 as run)
+#   0 pulid_s0     start_step 0, PuLID's app default, into pulid_s0
+# start_step is PuLID's identity-versus-editability knob: its docs suggest 4
+# for photoreal scenes, its app defaults to 0, and CONTEXT 6.17 measures
+# that the choice moves both ID Loss and CLIPScore by more than the effects
+# Part 1 reports.
 #
 # The generator signature is verified (probe 1790289) and the pilot ran 97 cells
 # clean at 35.1 s/img, which is what sizes this array: 12 shards of 125 cells at
@@ -41,9 +47,13 @@ export NO_ALBUMENTATIONS_UPDATE=1
 
 cd "${SLURM_SUBMIT_DIR:-$HOME/prl26-infiniteyou}" || exit 1
 
+ID_START="${1:-4}"
+OUT_NAME="${2:-pulid}"
+
 python src/gen_pulid.py \
   --manifest benchmark/manifest_repro.parquet \
-  --out      "$PRL/results/images/pulid" \
+  --out      "$PRL/results/images/$OUT_NAME" \
+  --id-start "$ID_START" \
   --pulid-repo "$PRL/PuLID" \
   --offload \
   --shard "$SLURM_ARRAY_TASK_ID" --num-shards 12
