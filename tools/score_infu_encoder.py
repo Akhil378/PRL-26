@@ -82,6 +82,23 @@ class InfUEncoder:
         return None
 
 
+def score_floor(enc, a):
+    """The floor: filtered reference photographs scored against the originals."""
+    rows, refs = [], {}
+    for p in sorted(Path(a.images).glob("*__floor_*.png")):
+        iid, rest = p.stem.split("__floor_", 1)
+        level, name = rest.split("_", 1)
+        if iid not in refs:
+            refs[iid] = enc.embed_reference(cv2.imread(str(ROOT / "benchmark/identities" / f"{iid}.jpg")))
+        g = enc.embed_generated(cv2.imread(str(p)))
+        rows.append({"iid": iid, "level": int(level), "filter": name,
+                     "id_loss_irse50": None if g is None else float(1.0 - np.dot(g, refs[iid]))})
+    df = pd.DataFrame(rows)
+    df.to_csv(a.out, index=False)
+    print(df.groupby(["level", "filter"])["id_loss_irse50"].agg(["mean", "std", "count"]).round(4))
+    return 0
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--manifest", required=True)
@@ -89,9 +106,14 @@ def main():
     ap.add_argument("--method", required=True)
     ap.add_argument("--out", required=True)
     ap.add_argument("--insightface-root", default=None)
+    ap.add_argument("--floor", action="store_true",
+                    help="--images holds the domain-shift floor, <iid>__floor_<k>_<name>.png, "
+                         "each scored against benchmark/identities/<iid>.jpg")
     a = ap.parse_args()
 
     enc = InfUEncoder(a.insightface_root)
+    if a.floor:
+        return score_floor(enc, a)
     m = pd.read_parquet(ROOT / a.manifest)
     refs, rows, t0 = {}, [], time.time()
     for i, r in enumerate(m.itertuples(), 1):

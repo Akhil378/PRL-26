@@ -30,8 +30,10 @@ export NO_ALBUMENTATIONS_UPDATE=1
 cd "${SLURM_SUBMIT_DIR:-$HOME/prl26-infiniteyou}" || exit 1
 
 rc=0
-for spec in "infu_aes2 manifest_repro" "pulid manifest_repro" "paperid_infu manifest_paperid"; do
-  set -- $spec
+# SETS and FLOOR select the work; the defaults are the Part 1 run.
+SETS="${SETS:-infu_aes2:manifest_repro pulid:manifest_repro paperid_infu:manifest_paperid}"
+for spec in $SETS; do
+  set -- ${spec/:/ }
   python tools/score_infu_encoder.py \
     --manifest "benchmark/$2.parquet" \
     --images   "$PRL/results/images/$1" \
@@ -39,5 +41,8 @@ for spec in "infu_aes2 manifest_repro" "pulid manifest_repro" "paperid_infu mani
     --insightface-root "$INSIGHTFACE_HOME" \
     --out      "$PRL/results/scores/irse50_$1_$2.csv" || rc=$?
 done
+if [ "${FLOOR:-0}" = "1" ]; then
+  python tools/score_infu_encoder.py --floor --manifest none --method floor --images "$PRL/results/images/floor" --insightface-root "$INSIGHTFACE_HOME" --out "$PRL/results/scores/irse50_floor.csv" || rc=$?
+fi
 echo "scorer exit: $rc"
 exit $rc
