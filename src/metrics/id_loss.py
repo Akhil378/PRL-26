@@ -3,12 +3,15 @@
 
     ID Loss = 1 - cos(ArcFace(generated), ArcFace(reference))
 
-Both InfU and PuLID-FLUX condition on a 512-d ArcFace embedding from InsightFace
-`antelopev2`. Scoring with that same network measures each method against the
-encoder it was optimised for, which flatters both. `antelopev2` is kept because
-it is what makes the numbers comparable to Table 1, and `buffalo_l` is carried
-alongside as a held-out check. Any claim that survives only under antelopev2 is
-a claim about the encoder, not about identity.
+CORRECTED 23 Sep 2026. This docstring used to say that both methods condition
+on antelopev2's recogniser. Only PuLID-FLUX does (glintr100). InfU uses
+antelopev2 for detection and landmarks alone and embeds the aligned crop with
+facexlib's IR-SE50 ArcFace. Scoring with glintr100 therefore judges PuLID by
+its own encoder and InfU by a foreign one, and buffalo_l is no neutral check:
+per cell it agrees with glintr100 at r = 0.985. The ranking of the two methods
+follows the recogniser -- each wins under its own -- so every ID Loss claim must
+be reported under both methods' encoders. InfU's is scored by
+tools/score_infu_encoder.py; see CONTEXT 6.17.
 
 When no face is detected in a generated image the loss is undefined. It is
 returned as None and the caller records the failure; the detection rate is a
