@@ -143,8 +143,10 @@ def build(frames, D, iid, bp, args, out: Path):
                 a.set_xlabel(f"ID Loss {cell.loc[s, 'id_loss_antelope']:.3f}",
                              fontsize=7.5)
             else:
-                q = D[(D.method == key) & (D.style == s) & (D.iid == iid)
-                      & (D.base_pid == bp)].set_index("metric")["delta"]
+                q = D[(D["method"] == key) & (D["style"] == s) & (D["iid"] == iid)
+                      & (D["base_pid"] == bp)].set_index("metric")["delta"]
+                # D.style would be DataFrame.style, pandas' Styler, and match
+                # nothing: columns are indexed by name throughout this block.
                 a.set_xlabel(f"\u0394style {q['style_score']:+.3f}   "
                              f"\u0394ID {q['id_loss_antelope']:+.3f}",
                              fontsize=7.5)
