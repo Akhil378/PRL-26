@@ -94,11 +94,11 @@ def load_part1(S):
 
 
 P1_METRICS = [
-    ("ID Loss, InfU's encoder (IR-SE50)", None, "id_loss_irse50"),
-    ("ID Loss, PuLID's encoder (antelopev2)", None, "id_loss_antelope"),
-    ("ID Loss, buffalo\\_l", None, "id_loss_buffalo"),
-    ("CLIPScore (ViT-B/32)", "clip", "clipscore_b32"),
-    ("CLIPScore (ViT-L/14)", None, "clipscore_l14"),
+    ("ID, InfU's enc. (IR-SE50)", None, "id_loss_irse50"),
+    ("ID, PuLID's enc. (antelopev2)", None, "id_loss_antelope"),
+    ("ID, buffalo\\_l", None, "id_loss_buffalo"),
+    ("CLIP, ViT-B/32", "clip", "clipscore_b32"),
+    ("CLIP, ViT-L/14", None, "clipscore_l14"),
     ("PickScore ($/100$)", "pick", "pickscore_paper"),
 ]
 
@@ -113,7 +113,7 @@ def t_part1_headline(S):
         if col == "id_loss_buffalo":
             # The published ID Loss gets a row of its own: the paper does not
             # say which recogniser produced it, so it belongs to none of the three.
-            rows.append(["ID Loss, recogniser not stated", "--", "--", "--",
+            rows.append(["ID, recogniser not stated", "--", "--", "--",
                          f"{PAPER['infu']['id']:.3f}", f"{PAPER['pulid']['id']:.3f}"])
     rows.append(None)
     # A detection rate is a proportion; the sd of a 0/1 indicator is a function
@@ -121,12 +121,12 @@ def t_part1_headline(S):
     def rate(x):
         k = int(x["face_detected"].astype(bool).sum())
         return f"{k / len(x):.3f} ({k})"
-    rows.append(["Face detection rate", rate(d["infu"]), rate(d["pulid4"]),
+    rows.append(["Face detection", rate(d["infu"]), rate(d["pulid4"]),
                  rate(d["pulid0"]), "--", "--"])
     return tex_table(
         "Part 1 reproduction",
         r"Part 1, $n=1500$ cells per column, mean $\pm$ standard deviation. PuLID "
-        r"is reported at two settings of \texttt{start\_step}, the step at which "
+        r"is reported at two settings of \texttt{start\_step} (columns PuLID 4 and 0), the step at which "
         r"it begins injecting identity: 4, which its documentation suggests for "
         r"realistic images, and 0, its default. ID Loss is $1-\cos$ similarity of "
         r"face-recogniser embeddings under three recognisers; each method "
@@ -135,8 +135,8 @@ def t_part1_headline(S):
         r"detection count. Paper columns are Jiang et al.'s Table 1, not "
         r"recomputed; the recogniser behind the published ID Loss is not stated.",
         "tab:part1",
-        ["Metric", "InfU", "PuLID, start 4", "PuLID, start 0", "InfU (paper)", "PuLID (paper)"],
-        rows, align="lcccrr", size="small")
+        ["", "InfU", "PuLID 4", "PuLID 0", "InfU, paper", "PuLID, paper"],
+        rows, align="lcccrr", size="footnotesize")
 
 
 def paired(a, b, col):
@@ -179,8 +179,8 @@ def t_paired(S):
         r"leader on identity follows the recogniser and PuLID's setting; the "
         r"leader on text alignment follows PuLID's setting.",
         "tab:paired",
-        ["", "Start 4", "Worst case", "Start 0", "Worst case"],
-        rows, align="lcccc", size="small")
+        ["", "PuLID 4", "Worst case", "PuLID 0", "Worst case"],
+        rows, align="lcccc", size="footnotesize")
 
 
 def t_part1_strata(S):
@@ -234,10 +234,10 @@ def t_controls(S):
             pid = pid.merge(pd.read_csv(irf)[["cell", "id_loss_irse50"]], on="cell", how="left")
         for c in ("id_loss_antelope", "id_loss_irse50"):
             pid[c] = pd.to_numeric(pid.get(c), errors="coerce")
-        rows.append(["InfU, this benchmark's identities", len(d["infu"]),
+        rows.append(["InfU, FRLL identities", len(d["infu"]),
                      f"{d['infu']['face_detected'].astype(float).mean():.3f}",
                      ms(d["infu"]["id_loss_antelope"]), ms(d["infu"]["id_loss_irse50"]), "--"])
-        rows.append(["InfU, the authors' example portraits", len(pid),
+        rows.append(["InfU, authors' portraits", len(pid),
                      f"{pid['face_detected'].astype(float).mean():.3f}",
                      ms(pid["id_loss_antelope"]), ms(pid["id_loss_irse50"]), "--"])
         rows.append(None)
@@ -248,7 +248,7 @@ def t_controls(S):
         # Part 1 means cover the same prompt distribution.
         if "weight" in ceil.columns:
             ceil = ceil.loc[ceil.index.repeat(ceil["weight"].astype(int))]
-        rows.append(["FLUX.1-dev, text only (ceiling)", n_prompts, "--", "--", "--",
+        rows.append(["Text-only FLUX (ceiling)", n_prompts, "--", "--", "--",
                      ms(ceil["clipscore_b32"])])
         rows.append(["InfU", len(d["infu"]), "--", "--", "--", ms(d["infu"]["clipscore_b32"])])
         rows.append(["PuLID, start 4", len(d["pulid4"]), "--", "--", "--", ms(d["pulid4"]["clipscore_b32"])])
@@ -263,8 +263,8 @@ def t_controls(S):
         r"unreleased test set). The ceiling is one image per prompt, weighted by "
         r"the prompt's Part 1 cell count.",
         "tab:controls",
-        ["Condition", "$n$", "Detection", "ID, PuLID's enc.", "ID, InfU's enc.", "CLIPScore"],
-        rows, size="small")
+        ["Condition", "$n$", "Detection", "ID, PuLID's enc.", "ID, InfU's enc.", "CLIP B/32"],
+        rows, size="footnotesize")
 
 
 def t_floor(S):
