@@ -111,9 +111,9 @@ def t_part1_headline(S):
                      f"{PAPER['infu'][key]:.3f}" if key else "--",
                      f"{PAPER['pulid'][key]:.3f}" if key else "--"])
         if col == "id_loss_buffalo":
-            # The published ID Loss gets a row of its own: the paper does not
-            # say which recogniser produced it, so it belongs to none of the three.
-            rows.append(["ID, recogniser not stated", "--", "--", "--",
+            # The published ID Loss gets a row of its own: the paper cites ArcFace
+            # but names no network, so it belongs to none of the three.
+            rows.append(["ID, ArcFace net not stated", "--", "--", "--",
                          f"{PAPER['infu']['id']:.3f}", f"{PAPER['pulid']['id']:.3f}"])
     rows.append(None)
     # A detection rate is a proportion; the sd of a 0/1 indicator is a function
@@ -134,7 +134,7 @@ def t_part1_headline(S):
         r"related to PuLID's. "
         r"ID Loss is undefined where no face is detected, so its $n$ is the "
         r"detection count. Paper columns are Jiang et al.'s Table 1, not "
-        r"recomputed; the recogniser behind the published ID Loss is not stated.",
+        r"recomputed; the published ID Loss cites ArcFace but names no network.",
         "tab:part1",
         ["", "InfU", "PuLID 4", "PuLID 0", "InfU, paper", "PuLID, paper"],
         rows, align="lcccrr", size="footnotesize\\setlength{\\tabcolsep}{4pt}")

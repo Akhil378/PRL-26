@@ -4,10 +4,11 @@
 The paper reports CLIPScore in the range 0.243-0.318 with a stated FLUX.1-dev
 ceiling of 0.334. That range is raw cosine similarity, not the common
 `2.5 * max(0, cos)` variant -- using the scaled form would inflate every number
-by 2.5x and make the comparison to Table 1 meaningless. The paper does not say
-which backbone it used, so both are reported. ViT-B/32 lands closest to the
-paper's range and leads the report's tables; ViT-L/14 is the first backbone
-score_all.py loads, so it is the one that drives the style score and FMI.
+by 2.5x and make the comparison to Table 1 meaningless. The paper names no
+backbone but says it follows the original CLIPScore paper, which uses ViT-B/32,
+so ViT-B/32 leads the report's tables (it also lands closest to the paper's
+range). ViT-L/14 is reported too; it is the first backbone score_all.py loads,
+so it is the one that drives the style score and FMI.
 
 Text is truncated at CLIP's 77-token limit. Several long prompts exceed it.
 That is standard and is almost certainly what the paper did, but it is stated
