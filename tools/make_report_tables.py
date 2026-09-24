@@ -94,8 +94,8 @@ def load_part1(S):
 
 
 P1_METRICS = [
-    ("ID, InfU's enc. (IR-SE50)", None, "id_loss_irse50"),
-    ("ID, PuLID's enc. (antelopev2)", None, "id_loss_antelope"),
+    ("ID, InfU's encoder", None, "id_loss_irse50"),
+    ("ID, PuLID's encoder", None, "id_loss_antelope"),
     ("ID, buffalo\\_l", None, "id_loss_buffalo"),
     ("CLIP, ViT-B/32", "clip", "clipscore_b32"),
     ("CLIP, ViT-L/14", None, "clipscore_l14"),
@@ -129,8 +129,9 @@ def t_part1_headline(S):
         r"is reported at two settings of \texttt{start\_step} (columns PuLID 4 and 0), the step at which "
         r"it begins injecting identity: 4, which its documentation suggests for "
         r"realistic images, and 0, its default. ID Loss is $1-\cos$ similarity of "
-        r"face-recogniser embeddings under three recognisers; each method "
-        r"conditions on a different one, and buffalo\_l is related to PuLID's. "
+        r"face-recogniser embeddings under three recognisers: InfU conditions on "
+        r"facexlib's IR-SE50, PuLID on antelopev2's glintr100, and buffalo\_l is "
+        r"related to PuLID's. "
         r"ID Loss is undefined where no face is detected, so its $n$ is the "
         r"detection count. Paper columns are Jiang et al.'s Table 1, not "
         r"recomputed; the recogniser behind the published ID Loss is not stated.",
