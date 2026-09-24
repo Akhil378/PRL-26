@@ -28,6 +28,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from scipy import stats
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -46,15 +47,21 @@ def ms(series, fmt="%.4f"):
     return f"${fmt % v.mean()} \\pm {fmt % v.std(ddof=1)}$"
 
 
-def tex_table(caption_short, caption_long, label, header, rows, align=None):
+def tex_table(caption_short, caption_long, label, header, rows, align=None,
+              size=None, pre_header=None):
     """A booktabs table: horizontal rules only, never a vertical line."""
     ncol = len(header)
     align = align or ("l" + "r" * (ncol - 1))
-    out = ["\\begin{table}[t]", "  \\centering",
+    out = ["\\begin{table}[t]", "  \\centering"]
+    if size:
+        out.append(f"  \\{size}")
+    out += [
            f"  \\caption[{caption_short}]{{{caption_long}}}",
            f"  \\label{{{label}}}",
-           f"  \\begin{{tabular}}{{{align}}}", "    \\toprule",
-           "    " + " & ".join(header) + " \\\\", "    \\midrule"]
+           f"  \\begin{{tabular}}{{{align}}}", "    \\toprule"]
+    if pre_header:
+        out.append("    " + pre_header)
+    out += ["    " + " & ".join(header) + " \\\\", "    \\midrule"]
     for r in rows:
         if r is None:
             out.append("    \\midrule")
@@ -64,187 +71,230 @@ def tex_table(caption_short, caption_long, label, header, rows, align=None):
     return "\n".join(out)
 
 
+def load_part1(S):
+    """InfU, PuLID at start_step 4 and at 0, each with InfU's-encoder ID Loss merged in.
+
+    InfU conditions on facexlib's IR-SE50; PuLID on antelopev2's glintr100. The
+    IR-SE50 column comes from tools/score_infu_encoder.py (irse50_*.csv) and is
+    joined by cell, so every row keeps the same detected set across recognisers.
+    """
+    out = {}
+    for key, stem in [("infu", "infu_aes2"), ("pulid4", "pulid"), ("pulid0", "pulid_s0")]:
+        d = pd.read_parquet(S / f"{stem}_manifest_repro.parquet")
+        f = S / f"irse50_{stem}_manifest_repro.csv"
+        if f.exists():
+            d = d.merge(pd.read_csv(f)[["cell", "id_loss_irse50"]], on="cell", how="left")
+        else:
+            d["id_loss_irse50"] = np.nan
+        for c in ["id_loss_antelope", "id_loss_buffalo", "id_loss_irse50",
+                  "clipscore_b32", "clipscore_l14", "pickscore_paper"]:
+            d[c] = pd.to_numeric(d[c], errors="coerce")
+        out[key] = d.set_index("cell")
+    return out
+
+
+P1_METRICS = [
+    ("ID Loss, InfU's encoder (IR-SE50)", None, "id_loss_irse50"),
+    ("ID Loss, PuLID's encoder (antelopev2)", None, "id_loss_antelope"),
+    ("ID Loss, buffalo\\_l", None, "id_loss_buffalo"),
+    ("CLIPScore (ViT-B/32)", "clip", "clipscore_b32"),
+    ("CLIPScore (ViT-L/14)", None, "clipscore_l14"),
+    ("PickScore ($/100$)", "pick", "pickscore_paper"),
+]
+
+
 def t_part1_headline(S):
-    a = pd.read_parquet(S / "infu_aes2_manifest_repro.parquet")
-    b = pd.read_parquet(S / "pulid_manifest_repro.parquet")
+    d = load_part1(S)
     rows = []
-    for name, key, col in [("ID Loss (antelopev2)", "id", "id_loss_antelope"),
-                           ("ID Loss (buffalo\\_l)", None, "id_loss_buffalo"),
-                           ("CLIPScore (ViT-B/32)", "clip", "clipscore_b32"),
-                           ("CLIPScore (ViT-L/14)", None, "clipscore_l14"),
-                           ("PickScore ($/100$)", "pick", "pickscore_paper")]:
-        rows.append([name, ms(a[col]), ms(b[col]),
+    for name, key, col in P1_METRICS:
+        rows.append([name, ms(d["infu"][col]), ms(d["pulid4"][col]), ms(d["pulid0"][col]),
                      f"{PAPER['infu'][key]:.3f}" if key else "--",
                      f"{PAPER['pulid'][key]:.3f}" if key else "--"])
+        if col == "id_loss_buffalo":
+            # The published ID Loss gets a row of its own: the paper does not
+            # say which recogniser produced it, so it belongs to none of the three.
+            rows.append(["ID Loss, recogniser not stated", "--", "--", "--",
+                         f"{PAPER['infu']['id']:.3f}", f"{PAPER['pulid']['id']:.3f}"])
     rows.append(None)
-    # A detection rate is a proportion, not a sample of a continuous quantity.
-    # Quoting the standard deviation of the 0/1 indicator would satisfy the
-    # guideline's letter and mislead: it is a deterministic function of the rate
-    # and carries no information the rate does not. Report the count instead.
-    def rate(d):
-        k = int(d["face_detected"].astype(bool).sum())
-        return f"{k / len(d):.3f} ({k}/{len(d)})"
-    rows.append(["Face detection rate", rate(a), rate(b), "--", "--"])
+    # A detection rate is a proportion; the sd of a 0/1 indicator is a function
+    # of the rate and adds nothing, so the count is reported instead.
+    def rate(x):
+        k = int(x["face_detected"].astype(bool).sum())
+        return f"{k / len(x):.3f} ({k})"
+    rows.append(["Face detection rate", rate(d["infu"]), rate(d["pulid4"]),
+                 rate(d["pulid0"]), "--", "--"])
     return tex_table(
         "Part 1 reproduction",
-        "Part 1, $n=1500$ cells per method, mean $\\pm$ standard deviation. "
-        "Paper columns are the values reported by Jiang et al. and are not "
-        "recomputed. ID Loss is $1-\\cos$ similarity of ArcFace embeddings "
-        "(lower is better); it is undefined where no face is detected, so its "
-        "$n$ is the detection count rather than 1500. Face detection rate is "
-        "reported as a metric in its own right because it determines which "
-        "cells ID Loss can use. InfU denotes InfiniteYou (aes\\_stage2).",
-        "tab:part1", ["Metric", "InfU", "PuLID", "InfU (paper)", "PuLID (paper)"],
-        rows, align="lccrr")
+        r"Part 1, $n=1500$ cells per column, mean $\pm$ standard deviation. PuLID "
+        r"is reported at two settings of \texttt{start\_step}, the step at which "
+        r"it begins injecting identity: 4, which its documentation suggests for "
+        r"realistic images, and 0, its default. ID Loss is $1-\cos$ similarity of "
+        r"face-recogniser embeddings under three recognisers; each method "
+        r"conditions on a different one, and buffalo\_l is related to PuLID's. "
+        r"ID Loss is undefined where no face is detected, so its $n$ is the "
+        r"detection count. Paper columns are Jiang et al.'s Table 1, not "
+        r"recomputed; the recogniser behind the published ID Loss is not stated.",
+        "tab:part1",
+        ["Metric", "InfU", "PuLID, start 4", "PuLID, start 0", "InfU (paper)", "PuLID (paper)"],
+        rows, align="lcccrr", size="small")
+
+
+def paired(a, b, col):
+    j = pd.concat([a[col].rename("a"), b[col].rename("b")], axis=1)
+    cc = j.dropna()
+    diff = cc["b"] - cc["a"]
+    half = stats.t.ppf(0.975, len(diff) - 1) * diff.std(ddof=1) / np.sqrt(len(diff))
+    worst = None
+    if col.startswith("id_loss"):
+        w = j.fillna(np.nanmax(j.values))
+        worst = float((w["b"] - w["a"]).mean())
+    return float(diff.mean()), float(half), worst, len(diff)
+
+
+def t_paired(S):
+    """PuLID minus InfU, paired per cell, at both PuLID settings.
+
+    Replaces the old bounds table. The worst-case column charges every
+    undetected cell the largest loss observed anywhere, which is pessimistic for
+    whichever method fails to render a face more often -- PuLID at start 4,
+    InfU at start 0.
+    """
+    d = load_part1(S)
+    rows = []
+    for name, _, col in P1_METRICS:
+        cells = [name]
+        for key in ("pulid4", "pulid0"):
+            m, h, w, n = paired(d["infu"], d[key], col)
+            cells.append(f"${m:+.4f} \\pm {h:.4f}$")
+            cells.append(f"${w:+.4f}$" if w is not None else "--")
+        rows.append(cells)
+    return tex_table(
+        "Paired differences",
+        r"PuLID minus InfU, paired per cell, with the 95\% confidence half-width. "
+        r"For ID Loss a negative value favours PuLID; for CLIPScore and PickScore "
+        r"a negative value favours InfU. ID Loss uses cells where both methods "
+        r"produced a detectable face; the worst-case column instead charges every "
+        r"undetected cell the largest loss observed anywhere, so that the method "
+        r"which fails more often cannot profit from the missing evidence. The "
+        r"leader on identity follows the recogniser and PuLID's setting; the "
+        r"leader on text alignment follows PuLID's setting.",
+        "tab:paired",
+        ["", "Start 4", "Worst case", "Start 0", "Worst case"],
+        rows, align="lcccc", size="small")
 
 
 def t_part1_strata(S):
-    """Both methods, because the composition argument needs both.
+    """ID Loss by face size, under both methods' encoders.
 
-    Showing only InfU leaves open that the stratum pattern is a property of InfU
-    rather than of the benchmark. If both methods degrade on the same axis, the
-    axis is doing the work.
+    Under PuLID's encoder even close-ups sat far above the published level, which
+    made composition look insufficient. Under InfU's encoder the close-up stratum
+    is at or below it, so the table has to show both to show why.
     """
-    a = pd.read_parquet(S / "infu_aes2_manifest_repro.parquet")
-    b = pd.read_parquet(S / "pulid_manifest_repro.parquet")
+    d = load_part1(S)
     rows = []
-    for stratum in ["closeup", "waist", "full"]:
-        da, db = a[a["face_size"] == stratum], b[b["face_size"] == stratum]
-        rows.append([stratum, len(da),
-                     ms(da["face_detected"].astype(float), "%.3f"),
-                     ms(da["id_loss_antelope"]),
-                     ms(db["face_detected"].astype(float), "%.3f"),
-                     ms(db["id_loss_antelope"])])
+    for stratum, label in [("closeup", "close-up"), ("waist", "waist"), ("full", "full body")]:
+        g = {k: v[v["face_size"] == stratum] for k, v in d.items()}
+        rows.append([label, len(g["infu"]),
+                     f"{g['infu']['id_loss_antelope'].mean():.3f}",
+                     f"{g['pulid4']['id_loss_antelope'].mean():.3f}",
+                     f"{g['infu']['id_loss_irse50'].mean():.3f}",
+                     f"{g['pulid4']['id_loss_irse50'].mean():.3f}",
+                     f"{g['pulid0']['id_loss_irse50'].mean():.3f}"])
+    rows.append(None)
+    rows.append(["published", "--", f"{PAPER['infu']['id']:.3f}", f"{PAPER['pulid']['id']:.3f}",
+                 f"{PAPER['infu']['id']:.3f}", f"{PAPER['pulid']['id']:.3f}",
+                 f"{PAPER['pulid']['id']:.3f}"])
     return tex_table(
         "Part 1 by face size",
-        "Both methods stratified by the face-size axis of the benchmark, mean "
-        "$\pm$ standard deviation. Detection and identity loss degrade together "
-        "along the same axis for both methods, which identifies the axis rather "
-        "than either implementation as the source. The full-body stratum is "
-        "34\% of the benchmark by design; the original work varies face size "
-        "but does not publish its marginals, so a differently weighted benchmark "
-        "reports a different absolute ID Loss for an identical model. Note that "
-        "the close-up stratum alone remains well above the published overall "
-        "mean, so composition accounts for part of the gap and not all of it.",
+        r"Mean ID Loss by the face-size axis of the benchmark. Both methods "
+        r"degrade along the same axis under both recognisers, so the axis is a "
+        r"property of the benchmark. The full-body stratum is 34\% of this "
+        r"benchmark by design; the original work describes its own as a portrait "
+        r"benchmark and does not publish its marginals. Under InfU's encoder the "
+        r"close-up stratum reproduces the published level.",
         "tab:strata",
-        ["Face size", "$n$", "Det.\ InfU", "ID Loss InfU",
-         "Det.\ PuLID", "ID Loss PuLID"],
-        rows)
+        ["Face size", "$n$", "InfU", "PuLID 4", "InfU", "PuLID 4", "PuLID 0"],
+        rows, size="small",
+        pre_header=r"& & \multicolumn{2}{c}{PuLID's encoder} & \multicolumn{3}{c}{InfU's encoder} \\"
+                   "\n    \\cmidrule(lr){3-4}\\cmidrule(lr){5-7}")
 
 
 def t_controls(S):
-    """The two late controls: authors' identities, and the text-only ceiling.
-
-    Returns None when neither has been scored yet, so the table simply does not
-    appear rather than the build failing.
-    """
+    """The authors'-portraits control and the text-only ceiling."""
     pid_f = S / "paperid_infu_manifest_paperid.parquet"
     ceil_f = S / "ceiling_prompts.parquet"
     if not pid_f.exists() and not ceil_f.exists():
         return None
-
-    bench = pd.read_parquet(S / "infu_aes2_manifest_repro.parquet")
+    d = load_part1(S)
     rows = []
-
     if pid_f.exists():
         pid = pd.read_parquet(pid_f)
-        rows.append(["InfU, this benchmark's identities (FRLL)", len(bench),
-                     ms(bench["face_detected"].astype(float), "%.3f"),
-                     ms(bench["id_loss_antelope"]), "--"])
-        rows.append(["InfU, the authors' own example portraits", len(pid),
-                     ms(pid["face_detected"].astype(float), "%.3f"),
-                     ms(pid["id_loss_antelope"]), "--"])
+        irf = S / "irse50_paperid_infu_manifest_paperid.csv"
+        if irf.exists():
+            pid = pid.merge(pd.read_csv(irf)[["cell", "id_loss_irse50"]], on="cell", how="left")
+        for c in ("id_loss_antelope", "id_loss_irse50"):
+            pid[c] = pd.to_numeric(pid.get(c), errors="coerce")
+        rows.append(["InfU, this benchmark's identities", len(d["infu"]),
+                     f"{d['infu']['face_detected'].astype(float).mean():.3f}",
+                     ms(d["infu"]["id_loss_antelope"]), ms(d["infu"]["id_loss_irse50"]), "--"])
+        rows.append(["InfU, the authors' example portraits", len(pid),
+                     f"{pid['face_detected'].astype(float).mean():.3f}",
+                     ms(pid["id_loss_antelope"]), ms(pid["id_loss_irse50"]), "--"])
         rows.append(None)
-
     if ceil_f.exists():
         ceil = pd.read_parquet(ceil_f)
-        # Part 1's CLIPScore mean is over 1500 cells, in which a prompt appears
-        # once per identity paired with it. The ceiling has one image per
-        # prompt. Repeating each prompt by its Part 1 weight puts the two means
-        # on the same footing; the plain mean over 200 prompts does not.
         n_prompts = len(ceil)
+        # Weight each prompt by its Part 1 cell count so the ceiling mean and the
+        # Part 1 means cover the same prompt distribution.
         if "weight" in ceil.columns:
             ceil = ceil.loc[ceil.index.repeat(ceil["weight"].astype(int))]
-        infu_c = ms(bench["clipscore_b32"])
-        try:
-            pul = pd.read_parquet(S / "pulid_manifest_repro.parquet")
-            pul_n, pul_c = len(pul), ms(pul["clipscore_b32"])
-        except Exception:                      # noqa: BLE001
-            pul_n, pul_c = "--", "--"
-        # n is the number of images: one per prompt for the ceiling, one per
-        # cell for the two methods. The ceiling mean is weighted to the Part 1
-        # prompt distribution, so the three are comparable despite the n.
-        rows.append([r"FLUX.1-dev, text only (ceiling)", n_prompts, "--", "--",
+        rows.append(["FLUX.1-dev, text only (ceiling)", n_prompts, "--", "--", "--",
                      ms(ceil["clipscore_b32"])])
-        rows.append(["InfU", len(bench), "--", "--", infu_c])
-        rows.append(["PuLID", pul_n, "--", "--", pul_c])
-
+        rows.append(["InfU", len(d["infu"]), "--", "--", "--", ms(d["infu"]["clipscore_b32"])])
+        rows.append(["PuLID, start 4", len(d["pulid4"]), "--", "--", "--", ms(d["pulid4"]["clipscore_b32"])])
+        rows.append(["PuLID, start 0", len(d["pulid0"]), "--", "--", "--", ms(d["pulid0"]["clipscore_b32"])])
     return tex_table(
-        "Late controls",
-        "Two controls added after the main runs. The upper block isolates the "
-        "identity set: the authors' own example portraits are the only "
-        "identities whose provenance is certain, and every other factor is held "
-        "fixed. The lower block gives the text-only CLIPScore ceiling on this "
-        "benchmark, which is the quantity the original work's text-alignment "
-        "claim is stated against; it reports closing 66.7\% of the gap between "
-        "the baseline and that ceiling, measured on its own unreleased test "
-        "set. One text-only image is generated per prompt and weighted by the "
-        "number of Part 1 cells using that prompt, so the ceiling mean and the "
-        "Part 1 means are taken over the same prompt distribution.",
+        "Two controls",
+        r"Upper block: InfU on the only identities whose provenance is certain, "
+        r"the example portraits published with the original work, every other "
+        r"factor held fixed. Lower block: CLIPScore (ViT-B/32) of text-only "
+        r"generation on this benchmark, the bound the original work's "
+        r"text-alignment claim is stated against (it reports 0.334 on its "
+        r"unreleased test set). The ceiling is one image per prompt, weighted by "
+        r"the prompt's Part 1 cell count.",
         "tab:controls",
-        ["Condition", "$n$", "Detection", "ID Loss", "CLIPScore"],
-        rows)
-
-
-def t_bounds(S):
-    j = json.loads((S / "part1_headline.json").read_text())
-    rows = []
-    for metric, label in [("id_loss_antelope", "ID Loss (antelopev2)"),
-                          ("id_loss_buffalo", "ID Loss (buffalo\\_l)")]:
-        b = j.get("bounds", {}).get(metric)
-        if not b:
-            continue
-        rows.append([label,
-                     f"{b['complete_a']:.4f}", f"{b['complete_b']:.4f}",
-                     f"{b['diff_complete']:+.4f}",
-                     f"{b['imputed_a']:.4f}", f"{b['imputed_b']:.4f}",
-                     f"{b['diff_imputed']:+.4f}",
-                     "yes" if b["sign_stable"] else "no"])
-    return tex_table(
-        "Detection-bounded comparison",
-        "The InfU--PuLID comparison bounded against differential face "
-        "detection. Complete case uses only cells where both methods produced "
-        "a detectable face; the worst case charges every undetected cell the "
-        "largest loss observed anywhere. Complete-case analysis rewards a "
-        "method for failing on the cells it finds hardest, because failure "
-        "removes the evidence, so the truth lies between the two columns. "
-        "A negative difference favours PuLID.",
-        "tab:bounds",
-        ["Metric", "InfU", "PuLID", "$\\Delta$",
-         "InfU", "PuLID", "$\\Delta$", "Stable"],
-        rows, align="lrrrrrrc")
+        ["Condition", "$n$", "Detection", "ID, PuLID's enc.", "ID, InfU's enc.", "CLIPScore"],
+        rows, size="small")
 
 
 def t_floor(S):
     f = pd.read_parquet(S / "id_floor.parquet")
+    irf = S / "irse50_floor.csv"
+    ir = pd.read_csv(irf) if irf.exists() else None
+    if ir is not None:
+        # 1 - cos of an image with itself is zero up to float error; do not print -0.0000.
+        ir["id_loss_irse50"] = ir["id_loss_irse50"].clip(lower=0)
     rows = []
     for (lvl, name), g in f.groupby(["level", "filter"], sort=True):
-        rows.append([name.replace("_", "\\_"), len(g),
-                     ms(g["id_loss_antelope"]), ms(g["id_loss_buffalo"])])
+        irv = "--"
+        if ir is not None:
+            irv = ms(ir[(ir["level"] == lvl) & (ir["filter"] == name)]["id_loss_irse50"])
+        rows.append([name.replace("_", "\\_"), len(g), ms(g["id_loss_antelope"]),
+                     ms(g["id_loss_buffalo"]), irv])
     return tex_table(
         "ArcFace domain-shift floor",
-        "Identity loss caused by non-photographic rendering alone, with "
-        "geometry held fixed. Each reference photograph is filtered and scored "
-        "against itself, so the person and the landmark geometry are identical "
-        "by construction and the filters are verified sub-pixel against "
-        "fiducial marks. Values are mean $\\pm$ standard deviation over eight "
-        "identities. The painterly band (stylize\\_25 to stylize\\_60) is "
-        "comparable in magnitude to the entire ID Loss of the generated "
-        "images, which bounds what ID Loss can establish under stylisation. "
-        "These filters preserve the photograph's shading and structure whereas "
-        "a diffusion model reinterprets them, so this is a lower bound.",
+        r"Identity loss caused by non-photographic rendering alone, with geometry "
+        r"held fixed. Each reference photograph is filtered and scored against "
+        r"itself, so the person and the landmark geometry are identical by "
+        r"construction and the filters are verified sub-pixel against fiducial "
+        r"marks. Mean $\pm$ standard deviation over eight identities, under all "
+        r"three recognisers. The painterly band (stylize\_25 to stylize\_60) is as "
+        r"large as the entire ID Loss of the generated images under every "
+        r"recogniser, and larger under InfU's own. The filters preserve shading "
+        r"and structure that a diffusion model reinterprets, so this is a lower "
+        r"bound.",
         "tab:floor",
-        ["Filter", "$n$", "ID Loss (antelopev2)", "ID Loss (buffalo\\_l)"], rows)
+        ["Filter", "$n$", "antelopev2", "buffalo\\_l", "IR-SE50"], rows, size="small")
 
 
 def t_part2(S):
@@ -308,7 +358,7 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
 
     builders = [("part1", t_part1_headline), ("strata", t_part1_strata),
-                ("bounds", t_bounds), ("floor", t_floor), ("part2", t_part2),
+                ("paired", t_paired), ("floor", t_floor), ("part2", t_part2),
                 ("controls", t_controls)]
     made = []
     for name, fn in builders:

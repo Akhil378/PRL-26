@@ -41,7 +41,8 @@ ARMS = {
               (1.0, "style_pulid_manifest_style.parquet")],
 }
 
-ID = "id_loss_antelope"
+ID = "id_loss_antelope"          # PuLID's encoder
+ID_INFU = "id_loss_irse50"       # InfU's encoder, from tools/score_infu_encoder.py
 TXT = "clipscore_b32"
 
 
@@ -50,6 +51,11 @@ def collect(S, cells):
     for method, arms in ARMS.items():
         for scale, fname in arms:
             df = pd.read_parquet(S / fname)
+            irf = S / ("irse50_" + fname.replace(".parquet", ".csv"))
+            if irf.exists():
+                df = df.merge(pd.read_csv(irf)[["cell", ID_INFU]], on="cell", how="left")
+            else:
+                df[ID_INFU] = np.nan
             # Restrict every arm to the sweep's cells. For 0.6 and 0.8 this is a
             # no-op; for the 1.0 arm, read off the full grid, it is the whole
             # point -- otherwise the endpoint would rest on a larger and
@@ -57,6 +63,7 @@ def collect(S, cells):
             df = df[df["cell"].isin(cells)]
             idv = pd.to_numeric(df[ID], errors="coerce").dropna()
             txv = pd.to_numeric(df[TXT], errors="coerce").dropna()
+            iiv = pd.to_numeric(df[ID_INFU], errors="coerce").dropna()
             rows.append({
                 "method": method, "scale": scale, "n": len(df),
                 "n_id": len(idv),
@@ -64,6 +71,8 @@ def collect(S, cells):
                 "id_loss": float(idv.mean()),
                 "id_sem": float(idv.std(ddof=1) / np.sqrt(len(idv))),
                 "id_sd": float(idv.std(ddof=1)),
+                "id_infu": float(iiv.mean()) if len(iiv) else float("nan"),
+                "id_infu_sem": float(iiv.std(ddof=1) / np.sqrt(len(iiv))) if len(iiv) > 1 else float("nan"),
                 "clip": float(txv.mean()),
                 "clip_sem": float(txv.std(ddof=1) / np.sqrt(len(txv))),
                 "clip_sd": float(txv.std(ddof=1)),
@@ -72,28 +81,36 @@ def collect(S, cells):
 
 
 def figure(d, out):
+    """Two panels, one per judge of identity, same curves and same x axis.
+
+    The ID axis is the one that moves: under PuLID's encoder PuLID's curve lies
+    below InfU's at matched strength, under InfU's encoder above it. Drawing only
+    one panel would present a recogniser choice as a property of the methods.
+    """
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    fig, ax = plt.subplots(figsize=(5.4, 4.0))
+    fig, axes = plt.subplots(1, 2, figsize=(9.0, 3.8), sharex=True)
     styles = {"InfU": ("o-", "0.15"), "PuLID": ("s--", "0.45")}
-    for method, g in d.groupby("method"):
-        g = g.sort_values("scale")
-        mk, col = styles[method]
-        ax.errorbar(g["clip"], g["id_loss"],
-                    xerr=g["clip_sem"], yerr=g["id_sem"],
-                    fmt=mk, color=col, capsize=3, label=method, linewidth=1.4)
-        for _, r in g.iterrows():
-            ax.annotate(f"{r['scale']:.1f}", (r["clip"], r["id_loss"]),
-                        textcoords="offset points", xytext=(6, 4), fontsize=8,
-                        color=col)
-    ax.set_xlabel("CLIPScore, ViT-B/32 (text alignment, higher is better)")
-    ax.set_ylabel("ID Loss, antelopev2 (lower is better)")
-    ax.invert_yaxis()          # up and to the right is better on both axes
-    ax.legend(frameon=False)
-    ax.spines["top"].set_visible(False)
-    ax.spines["right"].set_visible(False)
+    panels = [("id_loss", "id_sem", "ID Loss, PuLID's encoder (antelopev2)"),
+              ("id_infu", "id_infu_sem", "ID Loss, InfU's encoder (IR-SE50)")]
+    for ax, (col, sem, label) in zip(axes, panels):
+        for method, g in d.groupby("method"):
+            g = g.sort_values("scale")
+            mk, c = styles[method]
+            ax.errorbar(g["clip"], g[col], xerr=g["clip_sem"], yerr=g[sem],
+                        fmt=mk, color=c, capsize=3, label=method, linewidth=1.4)
+            for _, r in g.iterrows():
+                ax.annotate(f"{r['scale']:.1f}", (r["clip"], r[col]),
+                            textcoords="offset points", xytext=(6, 4),
+                            fontsize=8, color=c)
+        ax.set_xlabel("CLIPScore, ViT-B/32 (higher is better)")
+        ax.set_ylabel(label + ", lower is better", fontsize=9)
+        ax.invert_yaxis()      # up and to the right is better on both axes
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+    axes[0].legend(frameon=False)
     fig.tight_layout()
     fig.savefig(out, format="pdf", bbox_inches="tight")
     plt.close(fig)
