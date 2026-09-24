@@ -90,6 +90,7 @@ def figure(d, out):
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
+    from matplotlib.ticker import MaxNLocator
 
     fig, axes = plt.subplots(1, 2, figsize=(9.0, 3.8), sharex=True)
     styles = {"InfU": ("o-", "0.15"), "PuLID": ("s--", "0.45")}
@@ -108,6 +109,7 @@ def figure(d, out):
         ax.set_xlabel("CLIPScore, ViT-B/32 (higher is better)")
         ax.set_ylabel(label + ", lower is better", fontsize=9)
         ax.invert_yaxis()      # up and to the right is better on both axes
+        ax.xaxis.set_major_locator(MaxNLocator(5))   # seven 4-decimal ticks collide
         ax.spines["top"].set_visible(False)
         ax.spines["right"].set_visible(False)
     axes[0].legend(frameon=False)
