@@ -137,7 +137,7 @@ def t_part1_headline(S):
         r"recomputed; the recogniser behind the published ID Loss is not stated.",
         "tab:part1",
         ["", "InfU", "PuLID 4", "PuLID 0", "InfU, paper", "PuLID, paper"],
-        rows, align="lcccrr", size="footnotesize")
+        rows, align="lcccrr", size="footnotesize\\setlength{\\tabcolsep}{4pt}")
 
 
 def paired(a, b, col):
