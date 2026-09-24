@@ -10,19 +10,21 @@
 
 # Part 2 generation: the out-of-distribution stylization stress test.
 #
-#   sbatch.tinygpu slurm/gen_style.sbatch infu  "--quantize-8bit"
+#   sbatch.tinygpu slurm/gen_style.sbatch infu  "--cpu-offload"
 #   sbatch.tinygpu slurm/gen_style.sbatch pulid "--offload --id-start 1"
 #
 # Sweep arms (the Pareto frontier) reuse this script with a scale knob and their
 # own output directory, so they never collide with the main grid:
 #
-#   sbatch.tinygpu slurm/gen_style.sbatch infu  "--quantize-8bit --cond-scale 0.6" 6 style_infu_cs06
+#   sbatch.tinygpu slurm/gen_style.sbatch infu  "--cpu-offload --cond-scale 0.6" 6 style_infu_cs06
 #   sbatch.tinygpu slurm/gen_style.sbatch pulid "--offload --id-start 1 --id-weight 0.6" 6 style_pulid_iw06
 #
 # Positional arguments, because --export=NONE discards the submitting shell's
 # environment (SUBMITTING.md): <method> "<flags>" [shards] [out-dir-leaf].
 #
-# 576 cells over 6 shards is 96 per task: ~40 min for InfU at 24.8 s/img and
+# InfU runs at bf16 (--cpu-offload) here too, matching Part 1 (CONTEXT 6.2); the
+# run_config.json beside every Part 2 image directory records quantize_8bit: false.
+# 576 cells over 6 shards is 96 per task: ~55 min for InfU at 33.8 s/img and
 # ~56 min for PuLID at 35.1 s/img, both inside the 1:30 request.
 #
 # ---------------------------------------------------------------------------

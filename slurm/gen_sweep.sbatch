@@ -10,8 +10,8 @@
 
 # Part 2 sweep: the identity-strength arms of the Pareto frontier.
 #
-#   sbatch.tinygpu slurm/gen_sweep.sbatch infu  0.6 "--quantize-8bit"
-#   sbatch.tinygpu slurm/gen_sweep.sbatch infu  0.8 "--quantize-8bit"
+#   sbatch.tinygpu slurm/gen_sweep.sbatch infu  0.6 "--cpu-offload"
+#   sbatch.tinygpu slurm/gen_sweep.sbatch infu  0.8 "--cpu-offload"
 #   sbatch.tinygpu slurm/gen_sweep.sbatch pulid 0.6 "--offload --id-start 1"
 #   sbatch.tinygpu slurm/gen_sweep.sbatch pulid 0.8 "--offload --id-start 1"
 #

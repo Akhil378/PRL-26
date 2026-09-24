@@ -125,8 +125,13 @@ seed = int(sha256(f"{iid}|{base_pid}").hexdigest()[:8], 16) % 2**31
 Two consequences, both deliberate:
 
 - **Across methods** -- InfU and PuLID read the same manifest, so a given cell
-  starts from the same initial latent in both. The comparison is paired at the
-  level of the noise, which removes a large variance component.
+  gets the same seed in both and the comparison is paired by cell (same identity,
+  same prompt), which removes a large variance component. The seed does NOT
+  give both methods the same initial noise: InfU's pipeline samples a VAE
+  posterior for its blank control image before drawing the latent
+  (pipelines/pipeline_flux_infusenet.py:401, then :474), which advances the CUDA
+  random state, while PuLID draws from a fresh generator (flux/sampling.py,
+  get_noise). Corrected 24 Sep 2026; earlier text claimed a shared latent.
 - **Across styles** -- the key uses the *base* prompt, so the photoreal control
   and its stylised siblings share a latent. The within-cell difference
   Delta_style therefore isolates the style effect instead of mixing it with noise.

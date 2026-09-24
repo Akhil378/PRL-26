@@ -4,8 +4,10 @@
 Both comparisons this project needs are paired by construction, because the
 benchmark derives each seed from the cell key rather than drawing it
 (`src/manifest.py:derive_seed`). Two runs over the same manifest therefore
-generate the same cell from the same latent, so the two arms differ only in the
-thing under test. That makes the per-cell difference the right statistic and an
+generate each cell from the same identity, prompt and seed. Two runs of the SAME
+method (the precision control) also share the latent; InfU and PuLID do not,
+because their codebases draw the noise differently, so there the pairing is by
+cell rather than by latent. That makes the per-cell difference the right statistic and an
 unpaired comparison of means simply wasteful -- it throws away the pairing and
 inflates the variance by whatever the between-cell spread is, which here is
 large: ID Loss ranged 0.270-0.549 across three scenes in the first sample.
@@ -60,7 +62,7 @@ ROOT = Path(__file__).resolve().parents[2]
 LOWER_IS_BETTER = {"id_loss_antelope", "id_loss_buffalo"}
 
 DEFAULT_METRICS = [
-    "id_loss_antelope",   # primary: both methods condition on antelopev2
+    "id_loss_antelope",   # PuLID's own encoder (glintr100); InfU's is IR-SE50, see tools/score_infu_encoder.py
     "id_loss_buffalo",    # held-out recogniser
     "clipscore_l14",
     "clipscore_b32",

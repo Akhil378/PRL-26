@@ -6,9 +6,12 @@ paired only with identities of that gender, which is what reduces the full
 cross product to roughly half.
 
 The seed is derived from the cell key rather than drawn at random, so every
-method generates the same cell from the same initial noise. That makes the
-InfU/PuLID comparison paired at the level of the latent, removes a large
-variance component, and is exactly reproducible from this file alone.
+method generates a cell from the same seed. That pairs the InfU/PuLID
+comparison by cell (same identity, same prompt), removes a large variance
+component, and is exactly reproducible from this file alone. The two methods
+do not end up with the same initial noise, because their codebases turn the
+seed into noise differently (InfU samples a VAE posterior for its blank control
+image first); within one method, cells sharing a seed do share a latent.
 
 Usage:
   python src/manifest.py --prompts benchmark/prompts_200.json \\
