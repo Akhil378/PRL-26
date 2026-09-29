@@ -145,9 +145,9 @@ def main():
     emb, out = Path(a.emb), Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
 
-    R = np.load(emb / "refs.npz")
+    # MTCNN boxes were saved as object arrays (facenet-pytorch returns them so);\n    # these are our own files, so unpickling them is safe.\n    R = np.load(emb / "refs.npz", allow_pickle=True)
     refs = {}
-    for k, box in zip(R["key"], R["mtcnn_box"]):
+    for k, box in zip(R["key"], R["mtcnn_box"].astype(float)):
         e = J(ROOT / str(k), box)
         if e is None:
             raise SystemExit(f"{a.judge}: no face in reference {k}")
@@ -156,8 +156,8 @@ def main():
 
     sets = a.sets or sorted(p.stem for p in emb.glob("*.npz") if p.stem not in SKIP)
     for s in sets:
-        z = np.load(emb / f"{s}.npz")
-        keys, rkeys, boxes = [str(k) for k in z["key"]], [str(r) for r in z["ref"]], z["mtcnn_box"]
+        z = np.load(emb / f"{s}.npz", allow_pickle=True)
+        keys, rkeys, boxes = [str(k) for k in z["key"]], [str(r) for r in z["ref"]], z["mtcnn_box"].astype(float)
         n = a.limit or len(keys)
         rows, E, t0 = [], np.full((n, 0), np.nan), time.time()
         vecs = []
