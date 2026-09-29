@@ -116,13 +116,18 @@ def main():
             p = stats.ttest_1samp(x, 0).pvalue
             both = common & J[j]["InfU"]["ident"].notna() & J[j][setting]["ident"].notna()
             ia, ib = J[j]["InfU"]["ident"][both].mean(), J[j][setting]["ident"][both].mean()
+            xa, xb = J[j]["InfU"]["ident"][both] > 0, J[j][setting]["ident"][both] > 0
+            n01, n10 = int((~xa & xb).sum()), int((xa & ~xb).sum())
+            p_id = stats.binomtest(n01, n01 + n10).pvalue if n01 + n10 else 1.0
             lean = f"{r:+.3f} [{lo:+.3f}, {hi:+.3f}]"
             print(f"  {names[j]:20} {len(x):5d} {lean:>22} {x.mean():+.4f} [{ci[0]:+.4f}, {ci[1]:+.4f}]"
-                  f" {x.mean() / x.std(ddof=1):+6.2f} {np.mean(x < 0):11.0%} {ia:11.3f} / {ib:.3f}")
+                  f" {x.mean() / x.std(ddof=1):+6.2f} {np.mean(x < 0):11.0%} {ia:11.3f} / {ib:.3f}"
+                  f"  McNemar p={p_id:.1e}")
             res.setdefault(j, {})[setting] = {"lean": r, "lean_ci": [lo, hi], "n": int(len(x)),
                                               "mean": x.mean(), "ci": list(ci), "p": p,
                                               "dz": x.mean() / x.std(ddof=1), "pulid_lower": np.mean(x < 0),
-                                              "ident_infu": ia, "ident_pulid": ib, "n_ident": int(both.sum())}
+                                              "ident_infu": ia, "ident_pulid": ib, "n_ident": int(both.sum()),
+                                              "ident_p": p_id}
     neutral = [j for j in res if j not in ("glint", "irse50") and all(
         res[j][s]["lean_ci"][0] <= 0 <= res[j][s]["lean_ci"][1] for s in ("PuLID 4", "PuLID 0"))]
     print(f"\nneutral at both settings (lean interval contains 0): {[names[j] for j in neutral]}")
