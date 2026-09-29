@@ -7,13 +7,18 @@ shows what the deltas look like.
 
 Selection is by rule, not by eye, because a hand-picked example of a claimed
 effect is not evidence of it. For every (identity, base prompt) cell, each
-method's per-style deltas in style adoption and ID Loss are compared with that
+method's per-style deltas in style gain and ID Loss are compared with that
 method's median delta for the same style (the medians Table 3 reports), each
 distance scaled by the metric's interquartile range so the two metrics weigh
 equally. The cell with the smallest summed distance, among cells where a face was
 detected in all eight images, is the one shown: the most typical cell, not the
 most striking one. `--cell iid:base_pid` overrides the rule, and the figure then
 says nothing about typicality.
+
+Style gain is CLIP (ViT-L/14) similarity to the style phrase, styled image minus
+its photorealistic control on the SAME phrase (tools/score_style_phrases.py). It
+replaced the pre-registered style adoption on 29 Sep, which set the styled
+image's phrase against the control's "a natural colour photograph".
 
 Writes, into --out:
   fig_style_grid.pdf     the report figure (PDF, as the guideline requires)
@@ -43,15 +48,18 @@ STYLED = STYLES[1:]
 PRETTY = {"photoreal": "Photorealistic control", "oil_painting": "Oil painting",
           "render_3d": "3D render", "watercolour": "Watercolour"}
 METHODS = [("infu", "InfU", "style_infu"), ("pulid", "PuLID", "style_pulid")]
-METRICS = ["style_score", "id_loss_antelope"]
+METRICS = ["style_gain", "id_loss_antelope"]
+PHRASES = STYLES
 
 
 def load(scores: Path) -> dict[str, pd.DataFrame]:
+    sp = pd.read_parquet(scores / "style_phrases.parquet")
+    sims = [f"sim_l14_{s}" for s in PHRASES]
     out = {}
-    for key, _, _ in METHODS:
+    for key, _, img_dir in METHODS:
         d = pd.read_parquet(scores / f"style_{key}_manifest_style.parquet")
-        for m in METRICS:
-            d[m] = pd.to_numeric(d[m], errors="coerce")
+        d = d.merge(sp[sp["method"] == img_dir][["cell"] + sims], on="cell", how="left")
+        d["id_loss_antelope"] = pd.to_numeric(d["id_loss_antelope"], errors="coerce")
         out[key] = d
     return out
 
@@ -64,7 +72,8 @@ def deltas(frames: dict[str, pd.DataFrame]) -> pd.DataFrame:
         for s in STYLED:
             st = d[d["style"] == s].set_index(["iid", "base_pid"])
             for m in METRICS:
-                for (iid, bp), v in (st[m] - ctl[m]).items():
+                col = f"sim_l14_{s}" if m == "style_gain" else m
+                for (iid, bp), v in (st[col] - ctl[col]).items():
                     rows.append((key, s, m, iid, bp, v))
     return pd.DataFrame(rows, columns=["method", "style", "metric", "iid",
                                        "base_pid", "delta"])
@@ -154,7 +163,7 @@ def build(frames, D, iid, bp, args, out: Path):
                 # nothing: columns are indexed by name throughout this block.
                 # Two lines: side by side, the pair is wider than a panel and
                 # collides with the next one at 7.5 pt.
-                a.set_xlabel(f"\u0394style {signed(q['style_score'])}\n"
+                a.set_xlabel(f"\u0394style {signed(q['style_gain'])}\n"
                              f"\u0394ID {signed(q['id_loss_antelope'])}",
                              fontsize=7.5, linespacing=1.25)
 

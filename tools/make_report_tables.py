@@ -86,9 +86,24 @@ def load_part1(S):
             d = d.merge(pd.read_csv(f)[["cell", "id_loss_irse50"]], on="cell", how="left")
         else:
             d["id_loss_irse50"] = np.nan
-        for c in ["id_loss_antelope", "id_loss_buffalo", "id_loss_irse50",
+        # FaceNet (tools/score_facenet.py) finds faces with its own detector, so
+        # its column is NaN where MTCNN found none. found_again marks cells
+        # antelopev2 missed at 640 and found on a second look
+        # (tools/recover_missed_faces.py: 1152, 320/160 or padded; not "loose").
+        f = S / f"facenet_{stem}_manifest_repro.csv"
+        if f.exists():
+            d = d.merge(pd.read_csv(f)[["cell", "id_loss_facenet"]], on="cell", how="left")
+        else:
+            d["id_loss_facenet"] = np.nan
+        f = S / f"recovered_{stem}_manifest_repro.csv"
+        d["found_again"] = False
+        if f.exists():
+            r = pd.read_csv(f)
+            d["found_again"] = d["cell"].isin(r.loc[r["found_at"].isin(["full", "small", "pad"]), "cell"])
+        for c in ["id_loss_antelope", "id_loss_buffalo", "id_loss_irse50", "id_loss_facenet",
                   "clipscore_b32", "clipscore_l14", "pickscore_paper"]:
             d[c] = pd.to_numeric(d[c], errors="coerce")
+        d["face_detected"] = d["face_detected"].astype(bool)
         out[key] = d.set_index("cell")
     return out
 
@@ -97,6 +112,7 @@ P1_METRICS = [
     ("ID, InfU's encoder", None, "id_loss_irse50"),
     ("ID, PuLID's encoder", None, "id_loss_antelope"),
     ("ID, buffalo\\_l", None, "id_loss_buffalo"),
+    ("ID, FaceNet", None, "id_loss_facenet"),
     ("CLIP, ViT-B/32", "clip", "clipscore_b32"),
     ("CLIP, ViT-L/14", None, "clipscore_l14"),
     ("PickScore ($/100$)", "pick", "pickscore_paper"),
@@ -110,9 +126,9 @@ def t_part1_headline(S):
         rows.append([name, ms(d["infu"][col]), ms(d["pulid4"][col]), ms(d["pulid0"][col]),
                      f"{PAPER['infu'][key]:.3f}" if key else "--",
                      f"{PAPER['pulid'][key]:.3f}" if key else "--"])
-        if col == "id_loss_buffalo":
+        if col == "id_loss_facenet":
             # The published ID Loss gets a row of its own: the paper cites ArcFace
-            # but names no network, so it belongs to none of the three.
+            # but names no network, so it belongs to none of the recognisers here.
             rows.append(["ID, ArcFace net not stated", "--", "--", "--",
                          f"{PAPER['infu']['id']:.3f}", f"{PAPER['pulid']['id']:.3f}"])
     rows.append(None)
@@ -123,17 +139,26 @@ def t_part1_headline(S):
         return f"{k / len(x):.3f} ({k})"
     rows.append(["Face detection", rate(d["infu"]), rate(d["pulid4"]),
                  rate(d["pulid0"]), "--", "--"])
+
+    def again(x):
+        k = int((x["face_detected"] | x["found_again"]).sum())
+        return f"{k / len(x):.3f} ({k})"
+    rows.append(["Face found, second look", again(d["infu"]), again(d["pulid4"]),
+                 again(d["pulid0"]), "--", "--"])
     return tex_table(
         "Part 1 reproduction",
         r"Part 1, $n=1500$ cells per column, mean $\pm$ standard deviation. PuLID "
         r"is reported at two settings of \texttt{start\_step} (columns PuLID 4 and 0), the step at which "
         r"it begins injecting identity: 4, which its documentation suggests for "
         r"realistic images, and 0, its default. ID Loss is $1-\cos$ similarity of "
-        r"face-recogniser embeddings under three recognisers: InfU conditions on "
-        r"facexlib's IR-SE50, PuLID on antelopev2's glintr100, and buffalo\_l is "
-        r"related to PuLID's. "
+        r"face-recogniser embeddings: InfU conditions on "
+        r"facexlib's IR-SE50, PuLID on antelopev2's glintr100, buffalo\_l is "
+        r"related to PuLID's, and FaceNet, with its own detector, to neither "
+        r"(Table~\ref{tab:judges}). "
         r"ID Loss is undefined where no face is detected, so its $n$ is the "
-        r"detection count. Paper columns are Jiang et al.'s Table 1, not "
+        r"detection count. The second look searches each missed image again with "
+        r"the same detector at full size, at 320 and 160, and with a padded "
+        r"border. Paper columns are Jiang et al.'s Table 1, not "
         r"recomputed; the published ID Loss cites ArcFace but names no network.",
         "tab:part1",
         ["", "InfU", "PuLID 4", "PuLID 0", "InfU, paper", "PuLID, paper"],
@@ -141,8 +166,16 @@ def t_part1_headline(S):
 
 
 def paired(a, b, col):
+    """Mean difference over cells where both have a value; worst case imputes the rest.
+
+    FaceNet has its own detector, so its mean is taken over the cells where
+    antelopev2 found both faces too, as for the other rows, and its worst case
+    charges the cells where its own detector found none.
+    """
     j = pd.concat([a[col].rename("a"), b[col].rename("b")], axis=1)
     cc = j.dropna()
+    if col == "id_loss_facenet":
+        cc = cc[a["face_detected"].reindex(cc.index) & b["face_detected"].reindex(cc.index)]
     diff = cc["b"] - cc["a"]
     half = stats.t.ppf(0.975, len(diff) - 1) * diff.std(ddof=1) / np.sqrt(len(diff))
     worst = None
@@ -176,12 +209,73 @@ def t_paired(S):
         r"a negative value favours InfU. ID Loss uses cells where both methods "
         r"produced a detectable face; the worst-case column instead charges every "
         r"undetected cell the largest loss observed anywhere, so that the method "
-        r"which fails more often cannot profit from the missing evidence. The "
+        r"which fails more often cannot profit from the missing evidence. FaceNet "
+        r"uses the same cells where its own detector also found both faces, and "
+        r"its worst case charges the faces its detector missed. The "
         r"leader on identity follows the recogniser and PuLID's setting; the "
         r"leader on text alignment follows PuLID's setting.",
         "tab:paired",
         ["", "PuLID 4", "Worst case", "PuLID 0", "Worst case"],
         rows, align="lcccc", size="footnotesize")
+
+
+JUDGES = [("glint", "glintr100 (PuLID's)"), ("irse50", "IR-SE50 (InfU's)"), ("w600k", "buffalo\\_l"),
+          ("fn_vgg", "FaceNet, VGGFace2"), ("fn_casia", "FaceNet, CASIA"), ("sface", "SFace"),
+          ("vggface", "VGG-Face"), ("dlib", "dlib ResNet")]
+
+
+def t_judges(S):
+    """Eight identity judges: how far each leans towards one method's encoder, and its verdict.
+
+    Numbers come from tools/analyse_panel.py (panel.json), which needs the saved
+    embeddings; see that script for the lean.
+    """
+    f = S / "panel.json"
+    if not f.exists():
+        return None
+    P = json.loads(f.read_text())
+    J, rows = P["judges"], []
+
+    def lean(r):
+        lo, hi = r["lean_ci"]
+        return f"${r['lean']:+.2f}${'$^{*}$' if lo > 0 or hi < 0 else ''}"
+
+    def dz(r):
+        return f"${r['dz']:+.2f}${'$^{*}$' if r['p'] < 0.05 else ''}"
+    for key, name in JUDGES:
+        r4, r0 = J[key]["PuLID 4"], J[key]["PuLID 0"]
+        rows.append([name, lean(r4), dz(r4), f"{r4['pulid_lower']:.0%}".replace("%", "\\%"),
+                     lean(r0), dz(r0), f"{r0['pulid_lower']:.0%}".replace("%", "\\%")])
+        if key == "w600k":
+            rows.append(None)
+    rows.append(None)
+    p4, p0 = P["panel_PuLID 4"], P["panel_PuLID 0"]
+    rows.append(["Neutral panel", "--", f"${p4['mean_sd_units']:+.2f}$$^{{*}}$",
+                 f"{p4['pulid_lower']:.0%}".replace("%", "\\%"), "--",
+                 f"${p0['mean_sd_units']:+.2f}$$^{{*}}$", f"{p0['pulid_lower']:.0%}".replace("%", "\\%")])
+    return tex_table(
+        "Eight identity judges",
+        r"Each judge's lean towards one method's encoder, and its verdict. With "
+        r"$d$ the per-cell ID Loss of PuLID minus InfU, the lean is the "
+        r"correlation of a judge's $d$ with the standardised disagreement "
+        r"between the two encoders, $z(d_{\mathrm{IR\mbox{-}SE50}})-z(d_{\mathrm{glintr100}})$: "
+        r"negative sides with PuLID's encoder, positive with InfU's, and the two "
+        r"encoders mark the ends of the scale. $d_z$ is the mean of $d$ over its "
+        r"standard deviation, negative where PuLID preserves identity better, "
+        r"and the next column the share of cells where it does. Cells are those "
+        r"where antelopev2 and the judge's own detector found both faces. Below "
+        r"the rule, judges from outside the ArcFace lineage, each through its "
+        r"own published pipeline: FaceNet (Inception-ResNet, softmax, VGGFace2 or "
+        r"CASIA-WebFace, MTCNN crops), SFace (MobileFaceNet, sigmoid-constrained "
+        r"loss, YuNet detector), VGG-Face (VGG16, VGGFace) and dlib's ResNet "
+        r"(metric learning). The neutral panel averages the standardised $d$ of "
+        r"the four whose lean interval contains zero at both settings, the two "
+        r"FaceNets, SFace and VGG-Face. $^{*}$: 95\% interval excludes zero.",
+        "tab:judges",
+        ["Judge", "Lean", "$d_z$", "PuLID better", "Lean", "$d_z$", "PuLID better"],
+        rows, align="lrrrrrr", size="footnotesize",
+        pre_header=r"& \multicolumn{3}{c}{PuLID 4 against InfU} & \multicolumn{3}{c}{PuLID 0 against InfU} \\"
+                   "\n    \\cmidrule(lr){2-4}\\cmidrule(lr){5-7}")
 
 
 def t_part1_strata(S):
@@ -268,34 +362,60 @@ def t_controls(S):
         rows, size="footnotesize")
 
 
+FILTERS = ["edge_preserve", "stylize_25", "stylize_45", "stylize_60"]
+
+
+def floor_and_generated(S, key):
+    """(floor frame with filter + loss, InfU Part 1 mean, PuLID-4 Part 1 mean) for one judge."""
+    if key in ("glint", "w600k"):
+        col = "id_loss_antelope" if key == "glint" else "id_loss_buffalo"
+        f = pd.read_parquet(S / "id_floor.parquet").rename(columns={col: "loss"})
+        gen = [pd.read_parquet(S / f"{m}_manifest_repro.parquet")[col] for m in ("infu_aes2", "pulid")]
+    elif key in ("irse50", "fn_vgg"):
+        col = "id_loss_irse50" if key == "irse50" else "id_loss_facenet"
+        stem = "irse50" if key == "irse50" else "facenet"
+        f = pd.read_csv(S / f"{stem}_floor.csv").rename(columns={col: "loss"})
+        gen = [pd.read_csv(S / f"{stem}_{m}_manifest_repro.csv")[col] for m in ("infu_aes2", "pulid")]
+    else:
+        f = pd.read_csv(S / "panel" / f"{key}_floor.csv").rename(columns={f"id_loss_{key}": "loss"})
+        f["filter"] = f["key"].str.split("__floor_").str[1].str.split("_", n=1).str[1]
+        gen = [pd.read_csv(S / "panel" / f"{key}_{m}.csv")[f"id_loss_{key}"] for m in ("infu_aes2", "pulid")]
+    return f, [pd.to_numeric(g, errors="coerce").mean() for g in gen]
+
+
 def t_floor(S):
-    f = pd.read_parquet(S / "id_floor.parquet")
-    irf = S / "irse50_floor.csv"
-    ir = pd.read_csv(irf) if irf.exists() else None
-    if ir is not None:
-        # 1 - cos of an image with itself is zero up to float error; do not print -0.0000.
-        ir["id_loss_irse50"] = ir["id_loss_irse50"].clip(lower=0)
+    """The floor under every judge, beside the generated images' own ID Loss.
+
+    Judges are rows now that there are eight of them: the question the table
+    answers is, per judge, whether rendering alone costs as much as generation.
+    """
     rows = []
-    for (lvl, name), g in f.groupby(["level", "filter"], sort=True):
-        irv = "--"
-        if ir is not None:
-            irv = ms(ir[(ir["level"] == lvl) & (ir["filter"] == name)]["id_loss_irse50"])
-        rows.append([name.replace("_", "\\_"), len(g), ms(g["id_loss_antelope"]),
-                     ms(g["id_loss_buffalo"]), irv])
+    for key, name in JUDGES:
+        f, (gi, gp) = floor_and_generated(S, key)
+        cells = [name]
+        for flt in FILTERS:
+            cells.append(ms(f.loc[f["filter"] == flt, "loss"], "%.3f"))
+        cells.append(f"{gi:.3f} / {gp:.3f}")
+        rows.append(cells)
+        if key == "w600k":
+            rows.append(None)
     return tex_table(
-        "ArcFace domain-shift floor",
+        "Domain-shift floor under every judge",
         r"Identity loss caused by non-photographic rendering alone, with geometry "
         r"held fixed. Each reference photograph is filtered and scored against "
         r"itself, so the person and the landmark geometry are identical by "
         r"construction and the filters are verified sub-pixel against fiducial "
-        r"marks. Mean $\pm$ standard deviation over eight identities, under all "
-        r"three recognisers. The painterly band (stylize\_25 to stylize\_60) is as "
-        r"large as the entire ID Loss of the generated images under every "
-        r"recogniser, and larger under InfU's own. The filters preserve shading "
-        r"and structure that a diffusion model reinterprets, so this is a lower "
-        r"bound.",
+        r"marks; the unfiltered photograph scores zero under every judge. Mean "
+        r"$\pm$ standard deviation over eight identities (seven where a judge's "
+        r"detector misses one filtered photograph). The last column is the mean "
+        r"ID Loss of the Part 1 images of InfU and of PuLID at start step 4 under "
+        r"the same judge. Under every judge the painterly band (stylize\_25 to "
+        r"stylize\_60) is as large as the entire ID Loss of generation. The "
+        r"filters preserve shading and structure that a diffusion model "
+        r"reinterprets, so this is a lower bound.",
         "tab:floor",
-        ["Filter", "$n$", "antelopev2", "buffalo\\_l", "IR-SE50"], rows, size="small")
+        ["Judge", "edge\\_preserve", "stylize\\_25", "stylize\\_45", "stylize\\_60", "Generated"],
+        rows, align="lrrrrr", size="footnotesize")
 
 
 def t_part2(S):
@@ -307,13 +427,47 @@ def t_part2(S):
     ID Loss and style-adoption lines for one method belong next to each other.
     """
     STYLES = ["oil_painting", "render_3d", "watercolour"]
+    PHRASES = ["photoreal"] + STYLES
+    sp = pd.read_parquet(S / "style_phrases.parquet")
+
+    def style_rows(method):
+        """Style gain on one phrase, and how often CLIP names the requested style.
+
+        Replaces the pre-registered style adoption, which compared a styled
+        image against its style phrase with the photo against a different
+        phrase (tools/score_style_phrases.py).
+        """
+        d = sp[sp["method"] == f"style_{method}"]
+        photo = d[d["style"] == "photoreal"].set_index(["iid", "base_pid"])
+        gains, ps, named = [], [], []
+        for st in STYLES:
+            s = d[d["style"] == st].set_index(["iid", "base_pid"])
+            x = (s[f"sim_l14_{st}"] - photo[f"sim_l14_{st}"].reindex(s.index)).dropna().to_numpy()
+            gains.append(np.median(x))
+            ps.append(stats.wilcoxon(x).pvalue)
+            best = s[[f"sim_l14_{q}" for q in PHRASES]].to_numpy().argmax(1)
+            named.append(np.mean(best == PHRASES.index(st)))
+        m = len(ps)
+        order, adj, run = np.argsort(ps), np.empty(m), 0.0
+        for rank, i in enumerate(order):
+            run = max(run, (m - rank) * ps[i])
+            adj[i] = min(1.0, run)
+        return ([f"${g:+.4f}${'$^{*}$' if p < 0.05 else ''}" for g, p in zip(gains, adj)],
+                [f"{v:.0%}".replace("%", "\\%") for v in named])
+
     rows = []
     for method in ["infu", "pulid"]:
         j = json.loads((S / f"part2_{method}.json").read_text())
         name = "InfU" if method == "infu" else "PuLID"
-        for metric, label in [("id_loss_antelope", "ID Loss"),
-                              ("style_score", "Style adoption"),
-                              ("fmi_photo", "FMI")]:
+        gain, named = style_rows(method)
+        for metric, label in [("id_loss_antelope", "ID Loss"), ("gain", "Style gain"),
+                              ("named", "Named as the style"), ("fmi_photo", "FMI")]:
+            if metric == "gain":
+                rows.append([name, label] + gain)
+                continue
+            if metric == "named":
+                rows.append([name, label] + named)
+                continue
             by_style = {r["style"]: r for r in j["metrics"].get(metric, [])}
             cells = []
             for st in STYLES:
@@ -331,16 +485,21 @@ def t_part2(S):
         "Part 2 paired style deltas",
         "Part 2, styled minus photorealistic control, matched within cell so "
         "that both share an identity, a base prompt and a latent. Entries are "
-        "Hodges--Lehmann medians of the paired difference; $^{*}$ marks "
+        "medians of the paired difference; $^{*}$ marks "
         "significance under the Wilcoxon signed-rank test after Holm "
-        "correction across the three styles. Bootstrap 95\% intervals are "
+        "correction across the three styles. Bootstrap 95\\% intervals are "
         "omitted for space and are reproduced by "
-        "\\texttt{src/analysis/style\\_deltas.py}. FMI is the Face Masking "
+        "\\texttt{src/analysis/style\\_deltas.py} and "
+        "\\texttt{tools/analyse\\_extras.py}. Style gain is the CLIP (ViT-L/14) "
+        "similarity of the styled image to its style phrase minus that of the "
+        "photorealistic image to the same phrase; named as the style is the "
+        "share of styled images whose closest of the four condition phrases is "
+        "the one requested. FMI is the Face Masking "
         "Index, positive when the face resisted stylisation more than the "
-        "background did; style adoption is CLIP similarity to the condition's "
-        "own style phrase. The two must be read together, because a method "
-        "that does not adopt a style preserves identity trivially: $n$ is 144 "
-        "per cell for style adoption, 126 to 137 for ID Loss and 102 to 114 "
+        "background did. ID Loss (antelopev2) is shown for completeness and "
+        "cannot be read as identity once an image leaves the photographic "
+        "domain (Table~\\ref{tab:floor}). $n$ is 144 per cell for the CLIP rows, "
+        "126 to 137 for ID Loss and 102 to 114 "
         "for FMI, the reductions being cells with no detected face or no "
         "usable background region.",
         "tab:part2",
@@ -359,8 +518,8 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
 
     builders = [("part1", t_part1_headline), ("strata", t_part1_strata),
-                ("paired", t_paired), ("floor", t_floor), ("part2", t_part2),
-                ("controls", t_controls)]
+                ("paired", t_paired), ("judges", t_judges), ("floor", t_floor),
+                ("part2", t_part2), ("controls", t_controls)]
     made = []
     for name, fn in builders:
         try:
