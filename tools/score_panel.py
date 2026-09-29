@@ -145,7 +145,9 @@ def main():
     emb, out = Path(a.emb), Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
 
-    # MTCNN boxes were saved as object arrays (facenet-pytorch returns them so);\n    # these are our own files, so unpickling them is safe.\n    R = np.load(emb / "refs.npz", allow_pickle=True)
+    # MTCNN boxes were saved as object arrays (facenet-pytorch returns them so);
+    # these are our own files, so unpickling them is safe.
+    R = np.load(emb / "refs.npz", allow_pickle=True)
     refs = {}
     for k, box in zip(R["key"], R["mtcnn_box"].astype(float)):
         e = J(ROOT / str(k), box)
