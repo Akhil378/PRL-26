@@ -10,7 +10,7 @@ Conventions follow the rest of the project: Part 1 differences are PuLID minus
 InfU, paired by cell, mean with a 95% t interval; worst-case bounds impute the
 largest observed loss for every missing face; Part 2 deltas are styled minus
 photoreal within a method, Wilcoxon with Holm across the three styles, the
-Hodges-Lehmann location and a bootstrap interval for the median
+median with a bootstrap interval (the Hodges-Lehmann location alongside)
 (src/analysis/style_deltas.py).
 
 Usage:  python tools/analyse_extras.py results-backup/scores
@@ -108,9 +108,10 @@ def section_judge(I, P4, P0):
 
     for lab, P in (("s4", P4), ("s0", P0)):
         print(f"\n  PuLID {lab} minus InfU, cells where SCRFD found both faces (the paper's pipeline):")
-        common = I.face_detected & P.face_detected
+        common = (I.face_detected & P.face_detected)
+        common = common[common].index
         for c, name in JUDGES.items():
-            r = paired(I[common], P[common], c)
+            r = paired(I.loc[common], P.loc[common], c)
             wb = paired(I, P, c, I.face_detected if c != "id_loss_facenet" else I.face_detected_facenet,
                         P.face_detected if c != "id_loss_facenet" else P.face_detected_facenet)
             r["worst"] = wb["worst"]
@@ -122,8 +123,8 @@ def section_judge(I, P4, P0):
         OUT[f"paired_{lab}"]["facenet_own_detector"] = r
         print("   FaceNet by face size (SCRFD common set):")
         for fs in ("closeup", "waist", "full"):
-            m = common & (I.face_size == fs)
-            r = paired(I[m], P[m], "id_loss_facenet")
+            m = common[I.loc[common, "face_size"] == fs]
+            r = paired(I.loc[m], P.loc[m], "id_loss_facenet")
             print(f"     {fs:8} {fmt(r)}")
             OUT[f"paired_{lab}"][f"facenet_{fs}"] = r
 
@@ -213,12 +214,12 @@ def section_part2_id():
         for s in STYLES:
             x = deltas(d, s, "id_loss_facenet")
             ps.append(wil(x))
-            rows.append((s, len(x), hodges_lehmann(x), bootstrap_ci(x), np.mean(x)))
-        for (s, n, hl, ci, mu), p in zip(rows, holm(np.array(ps))):
+            rows.append((s, len(x), np.median(x), hodges_lehmann(x), bootstrap_ci(x), np.mean(x)))
+        for (s, n, med, hl, ci, mu), p in zip(rows, holm(np.array(ps))):
             g = deltas(d, s, "id_loss_antelope")
-            print(f"  {method:11} {s:12} n={n} HL {hl:+.3f} [{ci[0]:+.3f}, {ci[1]:+.3f}] mean {mu:+.3f} "
-                  f"Holm p={p:.1e}   (glintr100 HL {hodges_lehmann(g):+.3f})")
-            OUT.setdefault("part2_facenet", {})[f"{method}:{s}"] = {"n": n, "hl": hl, "ci": ci, "mean": mu, "p_holm": p}
+            print(f"  {method:11} {s:12} n={n} median {med:+.3f} [{ci[0]:+.3f}, {ci[1]:+.3f}] HL {hl:+.3f} mean {mu:+.3f} "
+                  f"Holm p={p:.1e}   (glintr100 median {np.median(g):+.3f})")
+            OUT.setdefault("part2_facenet", {})[f"{method}:{s}"] = {"n": n, "median": med, "hl": hl, "ci": ci, "mean": mu, "p_holm": p}
 
 
 def section_frontier():
@@ -267,11 +268,11 @@ def section_style():
                 ps.append(wil(x))
             for (s, x, y), p in zip(rows, holm(np.array(ps))):
                 ci = bootstrap_ci(x)
-                print(f"   {method:11} {s:12} gain HL {hodges_lehmann(x):+.4f} [{ci[0]:+.4f}, {ci[1]:+.4f}]"
+                print(f"   {method:11} {s:12} gain median {np.median(x):+.4f} [{ci[0]:+.4f}, {ci[1]:+.4f}]"
                       f" mean {x.mean():+.4f} >0 in {np.mean(x > 0):.0%} Holm p={p:.1e}"
                       f" | photo-phrase change {np.mean(y):+.4f}")
                 OUT.setdefault(f"style_gain_{bb}", {})[f"{method}:{s}"] = {
-                    "hl": hodges_lehmann(x), "ci": ci, "mean": x.mean(), "pos": np.mean(x > 0),
+                    "median": np.median(x), "hl": hodges_lehmann(x), "ci": ci, "mean": x.mean(), "pos": np.mean(x > 0),
                     "p_holm": p, "photo_change": np.mean(y), "n": len(x)}
 
     print("\n  zero-shot: share of images whose best-matching phrase is the one requested [l14 | b32]")
