@@ -57,9 +57,10 @@ from that output rather than from intent.
    equal, so any gender difference in the results cannot be attributed to the
    two subsets describing different scenes.
 
-5. Seven prompts printed in the paper's Figures 1 and 5 are included verbatim
-   (for example p001 "Blonde woman in office", p101 "Old man with beard") so that
-   part of the qualitative panel is directly comparable to theirs.
+5. Two prompts printed in the paper's figures are included verbatim, p001
+   "Blonde woman in office" and p101 "Old man with beard", so that part of the
+   qualitative panel is directly comparable to theirs. (This line used to say
+   seven; a re-read of the paper found only these two printed verbatim.)
 
 ### Recovering the paper's pairing scheme
 

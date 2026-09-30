@@ -260,7 +260,7 @@ def t_judges(S):
         r"correlation of a judge's $d$ with the standardised disagreement "
         r"between the two encoders, $z(d_{\mathrm{IR\mbox{-}SE50}})-z(d_{\mathrm{glintr100}})$: "
         r"negative sides with PuLID's encoder, positive with InfU's, and the two "
-        r"encoders mark the ends of the scale. $d_z$ is the mean of $d$ over its "
+        r"encoders themselves sit at the two extremes. $d_z$ is the mean of $d$ over its "
         r"standard deviation, negative where PuLID preserves identity better, "
         r"and the next column the share of cells where it does. Cells are those "
         r"where antelopev2 and the judge's own detector found both faces. Below "
