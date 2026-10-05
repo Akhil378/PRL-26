@@ -45,3 +45,25 @@ report/report.aux
 report/report.log
 report/report.out
 report/report.toc
+# ... and those of the IDEA Lab template's chain (biber, makeglossaries-lite)
+report/report.lof
+report/report.lot
+report/report.bbl
+report/report.bcf
+report/report.blg
+report/report.run.xml
+report/report.acn
+report/report.acr
+report/report.alg
+report/report.glo
+report/report.gls
+report/report.glg
+report/report.ist
+report/report.glsdefs
+report/biber.out
+report/glossaries.out
+report/report.idx
+# The template's logos are part of the build, unlike every other PNG here.
+!report/assets/*.png
+# The template as the chair supplied it; report/ carries the copy in use.
+IDEA_Lab_LATEX_Template__1_/

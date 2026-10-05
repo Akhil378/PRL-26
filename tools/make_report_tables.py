@@ -162,7 +162,7 @@ def t_part1_headline(S):
         r"recomputed; the published ID Loss cites ArcFace but names no network.",
         "tab:part1",
         ["", "InfU", "PuLID 4", "PuLID 0", "InfU, paper", "PuLID, paper"],
-        rows, align="lcccrr", size="footnotesize\\setlength{\\tabcolsep}{4pt}")
+        rows, align="lcccrr", size="scriptsize\\setlength{\\tabcolsep}{4pt}")
 
 
 def paired(a, b, col):
@@ -414,7 +414,7 @@ def t_floor(S):
         r"reinterprets, so this is a lower bound.",
         "tab:floor",
         ["Judge", "edge\\_preserve", "stylize\\_25", "stylize\\_45", "stylize\\_60", "Generated"],
-        rows, align="lrrrrr", size="footnotesize")
+        rows, align="lrrrrr", size="footnotesize\\setlength{\\tabcolsep}{4pt}")
 
 
 def t_part2(S):

@@ -57,10 +57,12 @@ from that output rather than from intent.
    equal, so any gender difference in the results cannot be attributed to the
    two subsets describing different scenes.
 
-5. Two prompts printed in the paper's figures are included verbatim, p001
-   "Blonde woman in office" and p101 "Old man with beard", so that part of the
-   qualitative panel is directly comparable to theirs. (This line used to say
-   seven; a re-read of the paper found only these two printed verbatim.)
+5. Of the seven prompts printed in the paper's Figure 1, two are included
+   verbatim, p001 "Blonde woman in office" and p101 "Old man with beard", so that
+   part of the qualitative panel is directly comparable to theirs. The other five
+   are not in the set: two name an ethnicity ("Asian girl in garden", "Javanese
+   bride, ..."), which rule 2 above excludes, and one a fictional character
+   ("Princess Belle, ..."). (This line used to say all seven were included.)
 
 ### Recovering the paper's pairing scheme
 
