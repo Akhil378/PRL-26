@@ -84,7 +84,7 @@ def tex_table(caption_short, caption_long, label, header, rows, align=None,
     align = align or ("l" + "r" * (ncol - 1))
     cells = " ".join(" ".join(str(c) for c in r) for r in rows if r is not None)
     caption_long = caption_long + abbreviations_used(caption_long, " ".join(header), pre_header or "", cells)
-    out = ["\\begin{table}[t]", "  \\centering"]
+    out = ["\\begin{table}[tbp]", "  \\centering"]
     if size:
         out.append(f"  \\{size}")
     out += [
@@ -179,19 +179,12 @@ def t_part1_headline(S):
                  again(d["pulid0"]), "--", "--"])
     return tex_table(
         "Part 1 reproduction",
-        r"Part 1, $n=1500$ cells per column, mean $\pm$ standard deviation. PuLID "
-        r"is reported at two settings of \texttt{start\_step} (columns PuLID 4 and 0), the step at which "
-        r"it begins injecting identity: 4, which its documentation suggests for "
-        r"realistic images, and 0, its default. ID Loss is $1-\cos$ similarity of "
-        r"face-recogniser embeddings: InfU conditions on "
-        r"facexlib's IR-SE50, PuLID on antelopev2's glintr100, buffalo\_l is "
-        r"related to PuLID's, and FaceNet, with its own detector, to neither "
-        r"(Table~\ref{tab:judges}). "
-        r"ID Loss is undefined where no face is detected, so its $n$ is the "
-        r"detection count. The second look searches each missed image again with "
-        r"the same detector at full size, at 320 and 160, and with a padded "
-        r"border. Paper columns are Jiang et al.'s Table 1, not "
-        r"recomputed; the published ID Loss cites ArcFace but names no network.",
+        r"Part 1, $n=1500$ cells per column, mean $\pm$ standard deviation; PuLID at "
+        r"\texttt{start\_step} 4, documented for realistic images, and 0, its default. "
+        r"ID Loss (Equation~\ref{eq:idloss}) under InfU's encoder (IR-SE50), PuLID's "
+        r"(glintr100), buffalo\_l and FaceNet; its $n$ is the detection count. The last "
+        r"row searches the missed images again (Appendix~\ref{app:missing}). Paper "
+        r"columns are Table 1 of the original work, whose ID Loss names no network.",
         "tab:part1",
         ["", "InfU", "PuLID 4", "PuLID 0", "InfU, paper", "PuLID, paper"],
         rows, align="lcccrr", size="scriptsize\\setlength{\\tabcolsep}{4pt}")
@@ -236,16 +229,11 @@ def t_paired(S):
         rows.append(cells)
     return tex_table(
         "Paired differences",
-        r"PuLID minus InfU, paired per cell, with the 95\% confidence half-width. "
-        r"For ID Loss a negative value favours PuLID; for CLIPScore and PickScore "
-        r"a negative value favours InfU. ID Loss uses cells where both methods "
-        r"produced a detectable face; the worst-case column instead charges every "
-        r"undetected cell the largest loss observed anywhere, so that the method "
-        r"which fails more often cannot profit from the missing evidence. FaceNet "
-        r"uses the same cells where its own detector also found both faces, and "
-        r"its worst case charges the faces its detector missed. The "
-        r"leader on identity follows the recogniser and PuLID's setting; the "
-        r"leader on text alignment follows PuLID's setting.",
+        r"PuLID minus InfU per cell, mean with 95\% confidence half-width; negative "
+        r"favours PuLID for ID Loss and InfU for CLIPScore and PickScore. ID Loss uses "
+        r"the cells where both faces were detected, for FaceNet also by its own "
+        r"detector; the worst case charges every undetected cell the largest loss "
+        r"observed.",
         "tab:paired",
         ["", "PuLID 4", "Worst case", "PuLID 0", "Worst case"],
         rows, align="lcccc", size="footnotesize")
@@ -287,22 +275,15 @@ def t_judges(S):
                  f"${p0['mean_sd_units']:+.2f}$$^{{*}}$", f"{p0['pulid_lower']:.0%}".replace("%", "\\%")])
     return tex_table(
         "Eight identity judges",
-        r"Each judge's lean towards one method's encoder, and its verdict. With "
-        r"$d$ the per-cell ID Loss of PuLID minus InfU, the lean (Equation~\ref{eq:lean}) is the "
-        r"correlation of a judge's $d$ with the standardised disagreement "
-        r"between the two encoders, $z(d_{\mathrm{IR\mbox{-}SE50}})-z(d_{\mathrm{glintr100}})$: "
-        r"negative sides with PuLID's encoder, positive with InfU's, and the two "
-        r"encoders themselves sit at the two extremes. $d_z$ is the mean of $d$ over its "
-        r"standard deviation, negative where PuLID preserves identity better, "
-        r"and the next column the share of cells where it does. Cells are those "
-        r"where antelopev2 and the judge's own detector found both faces. Below "
-        r"the rule, judges from outside the ArcFace lineage: FaceNet "
-        r"(Inception-ResNet identity classifier, VGGFace2 or CASIA-WebFace, its own "
-        r"MTCNN crops), SFace (MobileFaceNet, sigmoid-constrained loss, its own "
-        r"YuNet detector), VGG-Face (VGG16, VGGFace) and dlib's ResNet (metric "
-        r"learning), the last two on the MTCNN boxes. The neutral panel averages the standardised $d$ of "
-        r"the four whose lean interval contains zero at both settings, the two "
-        r"FaceNets, SFace and VGG-Face. $^{*}$: 95\% interval excludes zero.",
+        r"Each judge's lean (Equation~\ref{eq:lean}), negative towards PuLID's encoder "
+        r"and positive towards InfU's, and its verdict: $d_z$, the mean per-cell ID Loss "
+        r"difference (PuLID minus InfU) over its standard deviation, and the share of "
+        r"cells where PuLID's loss is lower, on the cells where antelopev2 and the "
+        r"judge's detector found both faces. Below the rule, judges outside the ArcFace "
+        r"family: FaceNet on VGGFace2 or CASIA-WebFace and SFace with their own "
+        r"detectors, VGG-Face and dlib on MTCNN boxes. The neutral panel averages the "
+        r"standardised differences of the four judges whose lean interval contains zero "
+        r"at both settings. $^{*}$: 95\% interval excludes zero.",
         "tab:judges",
         ["Judge", "Lean", "$d_z$", "PuLID better", "Lean", "$d_z$", "PuLID better"],
         rows, align="lrrrrrr", size="footnotesize",
@@ -436,17 +417,11 @@ def t_floor(S):
             rows.append(None)
     return tex_table(
         "Domain-shift floor under every judge",
-        r"Identity loss caused by non-photographic rendering alone, with geometry "
-        r"held fixed. Each reference photograph is filtered and scored against "
-        r"itself, so the person and the landmark geometry are identical by "
-        r"construction and the filters are verified sub-pixel against fiducial "
-        r"marks; the unfiltered photograph scores zero under every judge. Mean "
-        r"$\pm$ standard deviation over eight identities. The last column is the mean "
-        r"ID Loss of the Part 1 images of InfU and of PuLID at start step 4 under "
-        r"the same judge. Under every judge the painterly band (stylize\_25 to "
-        r"stylize\_60) is as large as the entire ID Loss of generation. The "
-        r"filters preserve shading and structure that a diffusion model "
-        r"reinterprets, so this is a lower bound.",
+        r"ID Loss of each reference photograph filtered and scored against itself, "
+        r"geometry unchanged (verified sub-pixel), mean $\pm$ standard deviation over "
+        r"eight identities; the unfiltered photograph scores zero. Generated: mean ID "
+        r"Loss of the Part 1 images of InfU / PuLID at start step 4 under the same "
+        r"judge. The filters keep shading and structure, so the floor is a lower bound.",
         "tab:floor",
         ["Judge", "edge\\_preserve", "stylize\\_25", "stylize\\_45", "stylize\\_60", "Generated"],
         rows, align="lrrrrr", size="footnotesize\\setlength{\\tabcolsep}{4pt}")
@@ -531,23 +506,15 @@ def t_part2(S):
         rows.pop()
     return tex_table(
         "Part 2 paired style deltas",
-        "Part 2, styled minus photorealistic control, matched within cell so "
-        "that both share an identity, a base prompt and a latent. Entries are "
-        "medians of the paired difference, each with its bootstrap 95\\% "
-        "interval on the row below; $^{*}$ marks "
-        "significance under the Wilcoxon signed-rank test after Holm "
-        "correction across the three styles. Style gain is the CLIP (ViT-L/14) "
-        "similarity of the styled image to its style phrase minus that of the "
-        "photorealistic image to the same phrase; named as the style is the "
-        "share of styled images whose closest of the four condition phrases is "
-        "the one requested. FMI is the Face Masking "
-        "Index, positive when the face resisted stylisation more than the "
-        "background did. ID Loss (antelopev2) is shown for completeness and "
-        "cannot be read as identity once an image leaves the photographic "
-        "domain (Table~\\ref{tab:floor}). $n$ is 144 per cell for the CLIP rows, "
-        "126 to 137 for ID Loss and 102 to 114 "
-        "for FMI, the reductions being cells with no detected face or no "
-        "usable background region.",
+        "Styled minus photorealistic control within a cell (same identity, base "
+        "prompt and latent): medians, with bootstrap 95\\% intervals below; $^{*}$ "
+        "significant under the Wilcoxon signed-rank test with Holm correction across "
+        "styles. Style gain is Equation~\\ref{eq:gain} (CLIP ViT-L/14); named as the "
+        "style is the share of styled images whose closest condition phrase is the "
+        "one requested; FMI is the paired Face Masking Index (Equation~\\ref{eq:fmi}). "
+        "ID Loss (antelopev2) cannot be read as identity once an image is painted "
+        "(Table~\\ref{tab:floor}). $n$ is 144 per cell for the CLIP rows, 126 to 137 "
+        "for ID Loss and 102 to 114 for FMI.",
         "tab:part2",
         ["Method", "Metric", "Oil painting", "3D render", "Watercolour"],
         rows, align="llrrr", size="footnotesize")
