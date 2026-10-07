@@ -49,19 +49,18 @@ def ms(series, fmt="%.4f"):
 
 # The guideline: "All abbreviations used in the tables are given in their
 # captions." Every table caption gets the expansions of the abbreviations found
-# in its caption, header and cells, so no caption can miss one.
+# in its caption, header and cells, so no caption can miss one. Network and
+# dataset names that contain capitals (IR-SE50, VGG-Face, VGGFace2,
+# CASIA-WebFace) are names, as ArcFace and FaceNet are, and are not expanded.
 ABBREVIATIONS = [
-    ("CASIA", "Institute of Automation, Chinese Academy of Sciences"),
     ("CI", "confidence interval"),
     ("CLIP", "Contrastive Language--Image Pre-training"),
     ("FMI", "Face Masking Index"),
     ("FRLL", "Face Research Lab London Set"),
     ("ID", "identity"),
     ("InfU", "InfiniteYou"),
-    ("IR-SE", "Improved-Residual network with Squeeze-and-Excitation blocks"),
     ("MTCNN", "Multi-Task Cascaded Convolutional Networks"),
     ("PuLID", "Pure and Lightning ID Customization"),
-    ("VGG", "Visual Geometry Group"),
     ("ViT", "Vision Transformer"),
 ]
 
@@ -70,8 +69,7 @@ def abbreviations_used(*texts):
     import re
     blob = " ".join(texts)
     found = [(a, b) for a, b in ABBREVIATIONS
-             if re.search(rf"(?<![A-Za-z]){re.escape(a)}(?![a-z])", blob)
-             and not (a == "VGG" and not re.search(r"(?<![A-Za-z])VGG(?![A-Za-z])", blob))]
+             if re.search(rf"(?<![A-Za-z]){re.escape(a)}(?![a-z])", blob)]
     if not found:
         return ""
     return " Abbreviations: " + "; ".join(f"{a}, {b}" for a, b in found) + "."
@@ -144,7 +142,6 @@ P1_METRICS = [
     ("ID, InfU's encoder", None, "id_loss_irse50"),
     ("ID, PuLID's encoder", None, "id_loss_antelope"),
     ("ID, buffalo\\_l", None, "id_loss_buffalo"),
-    ("ID, FaceNet", None, "id_loss_facenet"),
     ("CLIP, ViT-B/32", "clip", "clipscore_b32"),
     ("CLIP, ViT-L/14", None, "clipscore_l14"),
     ("PickScore ($/100$)", "pick", "pickscore_paper"),
@@ -158,7 +155,7 @@ def t_part1_headline(S):
         rows.append([name, ms(d["infu"][col]), ms(d["pulid4"][col]), ms(d["pulid0"][col]),
                      f"{PAPER['infu'][key]:.3f}" if key else "--",
                      f"{PAPER['pulid'][key]:.3f}" if key else "--"])
-        if col == "id_loss_facenet":
+        if col == "id_loss_buffalo":
             # The published ID Loss gets a row of its own: the paper cites ArcFace
             # but names no network, so it belongs to none of the recognisers here.
             rows.append(["ID, ArcFace net not stated", "--", "--", "--",
@@ -179,12 +176,11 @@ def t_part1_headline(S):
                  again(d["pulid0"]), "--", "--"])
     return tex_table(
         "Part 1 reproduction",
-        r"Part 1, $n=1500$ cells per column, mean $\pm$ standard deviation; PuLID at "
-        r"\texttt{start\_step} 4, documented for realistic images, and 0, its default. "
-        r"ID Loss (Equation~\ref{eq:idloss}) under InfU's encoder (IR-SE50), PuLID's "
-        r"(glintr100), buffalo\_l and FaceNet; its $n$ is the detection count. The last "
-        r"row searches the missed images again (Appendix~\ref{app:missing}). Paper "
-        r"columns are Table 1 of the original work, whose ID Loss names no network.",
+        r"Part 1, $n=1500$ cells per column, mean $\pm$ standard deviation. PuLID 4 "
+        r"and PuLID 0: start step 4, documented for realistic images, and 0, its "
+        r"default. ID Loss (Equation~\ref{eq:idloss}) is over the detected faces; the "
+        r"last row adds the faces a second search finds (Appendix~\ref{app:missing}). "
+        r"Paper columns: Table 1 of the original work, whose ID Loss names no network.",
         "tab:part1",
         ["", "InfU", "PuLID 4", "PuLID 0", "InfU, paper", "PuLID, paper"],
         rows, align="lcccrr", size="scriptsize\\setlength{\\tabcolsep}{4pt}")
@@ -229,11 +225,10 @@ def t_paired(S):
         rows.append(cells)
     return tex_table(
         "Paired differences",
-        r"PuLID minus InfU per cell, mean with 95\% confidence half-width; negative "
-        r"favours PuLID for ID Loss and InfU for CLIPScore and PickScore. ID Loss uses "
-        r"the cells where both faces were detected, for FaceNet also by its own "
-        r"detector; the worst case charges every undetected cell the largest loss "
-        r"observed.",
+        r"PuLID minus InfU per cell, mean $\pm$ 95\% confidence half-width; negative "
+        r"favours PuLID for ID Loss and InfU for CLIPScore and PickScore. ID Loss is "
+        r"over the cells where both faces were found; the worst case charges every "
+        r"undetected cell the largest loss observed.",
         "tab:paired",
         ["", "PuLID 4", "Worst case", "PuLID 0", "Worst case"],
         rows, align="lcccc", size="footnotesize")
@@ -275,15 +270,13 @@ def t_judges(S):
                  f"${p0['mean_sd_units']:+.2f}$$^{{*}}$", f"{p0['pulid_lower']:.0%}".replace("%", "\\%")])
     return tex_table(
         "Eight identity judges",
-        r"Each judge's lean (Equation~\ref{eq:lean}), negative towards PuLID's encoder "
-        r"and positive towards InfU's, and its verdict: $d_z$, the mean per-cell ID Loss "
+        r"Each judge's lean (Equation~\ref{eq:lean}; negative towards PuLID's encoder) "
+        r"and verdict: $d_z$, the mean per-cell ID Loss "
         r"difference (PuLID minus InfU) over its standard deviation, and the share of "
-        r"cells where PuLID's loss is lower, on the cells where antelopev2 and the "
-        r"judge's detector found both faces. Below the rule, judges outside the ArcFace "
-        r"family: FaceNet on VGGFace2 or CASIA-WebFace and SFace with their own "
-        r"detectors, VGG-Face and dlib on MTCNN boxes. The neutral panel averages the "
-        r"standardised differences of the four judges whose lean interval contains zero "
-        r"at both settings. $^{*}$: 95\% interval excludes zero.",
+        r"cells where PuLID's loss is lower, on cells where both faces were found. "
+        r"Below the first rule, judges outside the ArcFace family; the neutral panel "
+        r"pools the four whose lean interval contains zero at both settings. $^{*}$: "
+        r"95\% interval excludes zero.",
         "tab:judges",
         ["Judge", "Lean", "$d_z$", "PuLID better", "Lean", "$d_z$", "PuLID better"],
         rows, align="lrrrrrr", size="footnotesize",
@@ -469,55 +462,51 @@ def t_part2(S):
                 [f"{v:.0%}".replace("%", "\\%") for v in named])
 
     def ci_cell(ci):
-        return f"$[{ci[0]:+.3f}, {ci[1]:+.3f}]$"
+        return f"{{\\scriptsize$[{ci[0]:+.3f}, {ci[1]:+.3f}]$}}"
 
-    # Every median carries its bootstrap 95% interval on the row below: the
-    # guideline asks for a measure of dispersion with every measurement.
-    CI_LABEL = "\\quad 95\\% CI"
+    # Every median carries its bootstrap 95% interval beside it, in a smaller
+    # font: the guideline asks for a measure of dispersion with every
+    # measurement, and one row per quantity keeps the table to a third of a page.
     rows = []
     for method in ["infu", "pulid"]:
         j = json.loads((S / f"part2_{method}.json").read_text())
         name = "InfU" if method == "infu" else "PuLID"
         gain, gain_ci, named = style_rows(method)
+        first = True
         for metric, label in [("id_loss_antelope", "ID Loss"), ("gain", "Style gain"),
-                              ("named", "Named as the style"), ("fmi_photo", "FMI")]:
+                              ("named", "Named as style"), ("fmi_photo", "FMI")]:
+            who = name if first else ""
+            first = False
             if metric == "gain":
-                rows.append([name, label] + gain)
-                rows.append(["", CI_LABEL] + gain_ci)
+                rows.append([who, label] + [f"{g}\\ {c}" for g, c in zip(gain, gain_ci)])
                 continue
             if metric == "named":
-                rows.append([name, label] + named)
+                rows.append([who, label] + named)
                 continue
             by_style = {r["style"]: r for r in j["metrics"].get(metric, [])}
-            cells, ci_cells = [], []
+            cells = []
             for st in STYLES:
                 r = by_style.get(st)
                 if r is None:
                     cells.append("--")
-                    ci_cells.append("--")
                     continue
                 star = "$^{*}$" if r.get("significant") else ""
-                cells.append(f"${r['median']:+.4f}${star}")
-                ci_cells.append(ci_cell(r["ci"]))
-            rows.append([name, label] + cells)
-            rows.append(["", CI_LABEL] + ci_cells)
+                cells.append(f"${r['median']:+.4f}${star}\\ {ci_cell(r['ci'])}")
+            rows.append([who, label] + cells)
         rows.append(None)
     if rows and rows[-1] is None:
         rows.pop()
     return tex_table(
         "Part 2 paired style deltas",
         "Styled minus photorealistic control within a cell (same identity, base "
-        "prompt and latent): medians, with bootstrap 95\\% intervals below; $^{*}$ "
-        "significant under the Wilcoxon signed-rank test with Holm correction across "
-        "styles. Style gain is Equation~\\ref{eq:gain} (CLIP ViT-L/14); named as the "
-        "style is the share of styled images whose closest condition phrase is the "
-        "one requested; FMI is the paired Face Masking Index (Equation~\\ref{eq:fmi}). "
-        "ID Loss (antelopev2) cannot be read as identity once an image is painted "
-        "(Table~\\ref{tab:floor}). $n$ is 144 per cell for the CLIP rows, 126 to 137 "
-        "for ID Loss and 102 to 114 for FMI.",
+        "prompt and latent): medians with bootstrap 95\\% CI; $^{*}$ significant "
+        "(Wilcoxon signed-rank, Holm across styles). Style gain: Equation~\\ref{eq:gain}, "
+        "CLIP ViT-L/14. Named as style: share of styled images CLIP names as the "
+        "requested style. FMI: Equation~\\ref{eq:fmi}. ID Loss: PuLID's encoder. $n$ "
+        "per cell: 144 for the CLIP rows, 126 to 137 for ID Loss, 102 to 114 for FMI.",
         "tab:part2",
         ["Method", "Metric", "Oil painting", "3D render", "Watercolour"],
-        rows, align="llrrr", size="footnotesize")
+        rows, align="llrrr", size="footnotesize\\setlength{\\tabcolsep}{3pt}")
 
 
 def main():
