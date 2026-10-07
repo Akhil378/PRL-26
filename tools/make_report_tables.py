@@ -49,18 +49,20 @@ def ms(series, fmt="%.4f"):
 
 # The guideline: "All abbreviations used in the tables are given in their
 # captions." Every table caption gets the expansions of the abbreviations found
-# in its caption, header and cells, so no caption can miss one. Network and
-# dataset names that contain capitals (IR-SE50, VGG-Face, VGGFace2,
-# CASIA-WebFace) are names, as ArcFace and FaceNet are, and are not expanded.
+# in its caption, header and cells, so no caption can miss one. The same
+# entries are in the list of abbreviations (report/config/acronyms.tex).
 ABBREVIATIONS = [
+    ("CASIA", "Institute of Automation, Chinese Academy of Sciences"),
     ("CI", "confidence interval"),
     ("CLIP", "Contrastive Language--Image Pre-training"),
     ("FMI", "Face Masking Index"),
     ("FRLL", "Face Research Lab London Set"),
     ("ID", "identity"),
     ("InfU", "InfiniteYou"),
+    ("IR-SE", "Improved-Residual network with Squeeze-and-Excitation blocks"),
     ("MTCNN", "Multi-Task Cascaded Convolutional Networks"),
     ("PuLID", "Pure and Lightning ID Customization"),
+    ("VGG", "Visual Geometry Group"),
     ("ViT", "Vision Transformer"),
 ]
 
@@ -69,7 +71,8 @@ def abbreviations_used(*texts):
     import re
     blob = " ".join(texts)
     found = [(a, b) for a, b in ABBREVIATIONS
-             if re.search(rf"(?<![A-Za-z]){re.escape(a)}(?![a-z])", blob)]
+             if re.search(rf"(?<![A-Za-z]){re.escape(a)}(?![a-z])", blob)
+             and not (a == "VGG" and not re.search(r"(?<![A-Za-z])VGG(?![A-Za-z])", blob))]
     if not found:
         return ""
     return " Abbreviations: " + "; ".join(f"{a}, {b}" for a, b in found) + "."
@@ -275,8 +278,8 @@ def t_judges(S):
         r"difference (PuLID minus InfU) over its standard deviation, and the share of "
         r"cells where PuLID's loss is lower, on cells where both faces were found. "
         r"Below the first rule, judges outside the ArcFace family; the neutral panel "
-        r"pools the four whose lean interval contains zero at both settings. $^{*}$: "
-        r"95\% interval excludes zero.",
+        r"pools the four with no lean at either setting. $^{*}$: 95\% interval "
+        r"excludes zero.",
         "tab:judges",
         ["Judge", "Lean", "$d_z$", "PuLID better", "Lean", "$d_z$", "PuLID better"],
         rows, align="lrrrrrr", size="footnotesize",
