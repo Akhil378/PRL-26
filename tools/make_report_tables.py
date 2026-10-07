@@ -47,11 +47,43 @@ def ms(series, fmt="%.4f"):
     return f"${fmt % v.mean()} \\pm {fmt % v.std(ddof=1)}$"
 
 
+# The guideline: "All abbreviations used in the tables are given in their
+# captions." Every table caption gets the expansions of the abbreviations found
+# in its caption, header and cells, so no caption can miss one.
+ABBREVIATIONS = [
+    ("CASIA", "Institute of Automation, Chinese Academy of Sciences"),
+    ("CI", "confidence interval"),
+    ("CLIP", "Contrastive Language--Image Pre-training"),
+    ("FMI", "Face Masking Index"),
+    ("FRLL", "Face Research Lab London Set"),
+    ("ID", "identity"),
+    ("InfU", "InfiniteYou"),
+    ("IR-SE", "Improved-Residual network with Squeeze-and-Excitation blocks"),
+    ("MTCNN", "Multi-Task Cascaded Convolutional Networks"),
+    ("PuLID", "Pure and Lightning ID Customization"),
+    ("VGG", "Visual Geometry Group"),
+    ("ViT", "Vision Transformer"),
+]
+
+
+def abbreviations_used(*texts):
+    import re
+    blob = " ".join(texts)
+    found = [(a, b) for a, b in ABBREVIATIONS
+             if re.search(rf"(?<![A-Za-z]){re.escape(a)}(?![a-z])", blob)
+             and not (a == "VGG" and not re.search(r"(?<![A-Za-z])VGG(?![A-Za-z])", blob))]
+    if not found:
+        return ""
+    return " Abbreviations: " + "; ".join(f"{a}, {b}" for a, b in found) + "."
+
+
 def tex_table(caption_short, caption_long, label, header, rows, align=None,
               size=None, pre_header=None):
     """A booktabs table: horizontal rules only, never a vertical line."""
     ncol = len(header)
     align = align or ("l" + "r" * (ncol - 1))
+    cells = " ".join(" ".join(str(c) for c in r) for r in rows if r is not None)
+    caption_long = caption_long + abbreviations_used(caption_long, " ".join(header), pre_header or "", cells)
     out = ["\\begin{table}[t]", "  \\centering"]
     if size:
         out.append(f"  \\{size}")
@@ -256,7 +288,7 @@ def t_judges(S):
     return tex_table(
         "Eight identity judges",
         r"Each judge's lean towards one method's encoder, and its verdict. With "
-        r"$d$ the per-cell ID Loss of PuLID minus InfU, the lean is the "
+        r"$d$ the per-cell ID Loss of PuLID minus InfU, the lean (Equation~\ref{eq:lean}) is the "
         r"correlation of a judge's $d$ with the standardised disagreement "
         r"between the two encoders, $z(d_{\mathrm{IR\mbox{-}SE50}})-z(d_{\mathrm{glintr100}})$: "
         r"negative sides with PuLID's encoder, positive with InfU's, and the two "
@@ -289,27 +321,30 @@ def t_part1_strata(S):
     rows = []
     for stratum, label in [("closeup", "close-up"), ("waist", "waist"), ("full", "full body")]:
         g = {k: v[v["face_size"] == stratum] for k, v in d.items()}
+        # mean +/- sd: the guideline asks for a standard deviation with every
+        # measurement where one applies
         rows.append([label, len(g["infu"]),
-                     f"{g['infu']['id_loss_antelope'].mean():.3f}",
-                     f"{g['pulid4']['id_loss_antelope'].mean():.3f}",
-                     f"{g['infu']['id_loss_irse50'].mean():.3f}",
-                     f"{g['pulid4']['id_loss_irse50'].mean():.3f}",
-                     f"{g['pulid0']['id_loss_irse50'].mean():.3f}"])
+                     ms(g["infu"]["id_loss_antelope"], "%.3f"),
+                     ms(g["pulid4"]["id_loss_antelope"], "%.3f"),
+                     ms(g["infu"]["id_loss_irse50"], "%.3f"),
+                     ms(g["pulid4"]["id_loss_irse50"], "%.3f"),
+                     ms(g["pulid0"]["id_loss_irse50"], "%.3f")])
     rows.append(None)
     rows.append(["published", "--", f"{PAPER['infu']['id']:.3f}", f"{PAPER['pulid']['id']:.3f}",
                  f"{PAPER['infu']['id']:.3f}", f"{PAPER['pulid']['id']:.3f}",
                  f"{PAPER['pulid']['id']:.3f}"])
     return tex_table(
         "Part 1 by face size",
-        r"Mean ID Loss by the face-size axis of the benchmark. Both methods "
-        r"degrade along the same axis under both recognisers, so the axis is a "
-        r"property of the benchmark. The full-body stratum is 34\% of this "
+        r"ID Loss by the face-size axis of the benchmark, mean $\pm$ standard "
+        r"deviation over the cells with a detected face; $n$ is the number of "
+        r"cells per stratum. Both methods "
+        r"degrade along the same axis under both recognisers. The full-body stratum is 34\% of this "
         r"benchmark by design; the original work describes its own as a portrait "
         r"benchmark and does not publish its marginals. Under InfU's encoder the "
-        r"close-up stratum reproduces the published level.",
+        r"close-up stratum comes close to the published level.",
         "tab:strata",
         ["Face size", "$n$", "InfU", "PuLID 4", "InfU", "PuLID 4", "PuLID 0"],
-        rows, size="small",
+        rows, size="footnotesize\\setlength{\\tabcolsep}{4pt}",
         pre_header=r"& & \multicolumn{2}{c}{PuLID's encoder} & \multicolumn{3}{c}{InfU's encoder} \\"
                    "\n    \\cmidrule(lr){3-4}\\cmidrule(lr){5-7}")
 
@@ -438,11 +473,14 @@ def t_part2(S):
         """
         d = sp[sp["method"] == f"style_{method}"]
         photo = d[d["style"] == "photoreal"].set_index(["iid", "base_pid"])
-        gains, ps, named = [], [], []
+        sys.path.insert(0, str(ROOT))
+        from src.analysis.style_deltas import bootstrap_ci
+        gains, ps, named, cis = [], [], [], []
         for st in STYLES:
             s = d[d["style"] == st].set_index(["iid", "base_pid"])
             x = (s[f"sim_l14_{st}"] - photo[f"sim_l14_{st}"].reindex(s.index)).dropna().to_numpy()
             gains.append(np.median(x))
+            cis.append(bootstrap_ci(x))
             ps.append(stats.wilcoxon(x).pvalue)
             best = s[[f"sim_l14_{q}" for q in PHRASES]].to_numpy().argmax(1)
             named.append(np.mean(best == PHRASES.index(st)))
@@ -452,31 +490,42 @@ def t_part2(S):
             run = max(run, (m - rank) * ps[i])
             adj[i] = min(1.0, run)
         return ([f"${g:+.4f}${'$^{*}$' if p < 0.05 else ''}" for g, p in zip(gains, adj)],
+                [ci_cell(c) for c in cis],
                 [f"{v:.0%}".replace("%", "\\%") for v in named])
 
+    def ci_cell(ci):
+        return f"$[{ci[0]:+.3f}, {ci[1]:+.3f}]$"
+
+    # Every median carries its bootstrap 95% interval on the row below: the
+    # guideline asks for a measure of dispersion with every measurement.
+    CI_LABEL = "\\quad 95\\% CI"
     rows = []
     for method in ["infu", "pulid"]:
         j = json.loads((S / f"part2_{method}.json").read_text())
         name = "InfU" if method == "infu" else "PuLID"
-        gain, named = style_rows(method)
+        gain, gain_ci, named = style_rows(method)
         for metric, label in [("id_loss_antelope", "ID Loss"), ("gain", "Style gain"),
                               ("named", "Named as the style"), ("fmi_photo", "FMI")]:
             if metric == "gain":
                 rows.append([name, label] + gain)
+                rows.append(["", CI_LABEL] + gain_ci)
                 continue
             if metric == "named":
                 rows.append([name, label] + named)
                 continue
             by_style = {r["style"]: r for r in j["metrics"].get(metric, [])}
-            cells = []
+            cells, ci_cells = [], []
             for st in STYLES:
                 r = by_style.get(st)
                 if r is None:
                     cells.append("--")
+                    ci_cells.append("--")
                     continue
                 star = "$^{*}$" if r.get("significant") else ""
                 cells.append(f"${r['median']:+.4f}${star}")
+                ci_cells.append(ci_cell(r["ci"]))
             rows.append([name, label] + cells)
+            rows.append(["", CI_LABEL] + ci_cells)
         rows.append(None)
     if rows and rows[-1] is None:
         rows.pop()
@@ -484,12 +533,10 @@ def t_part2(S):
         "Part 2 paired style deltas",
         "Part 2, styled minus photorealistic control, matched within cell so "
         "that both share an identity, a base prompt and a latent. Entries are "
-        "medians of the paired difference; $^{*}$ marks "
+        "medians of the paired difference, each with its bootstrap 95\\% "
+        "interval on the row below; $^{*}$ marks "
         "significance under the Wilcoxon signed-rank test after Holm "
-        "correction across the three styles. Bootstrap 95\\% intervals are "
-        "omitted for space and are reproduced by "
-        "\\texttt{src/analysis/style\\_deltas.py} and "
-        "\\texttt{tools/analyse\\_extras.py}. Style gain is the CLIP (ViT-L/14) "
+        "correction across the three styles. Style gain is the CLIP (ViT-L/14) "
         "similarity of the styled image to its style phrase minus that of the "
         "photorealistic image to the same phrase; named as the style is the "
         "share of styled images whose closest of the four condition phrases is "
@@ -503,7 +550,7 @@ def t_part2(S):
         "usable background region.",
         "tab:part2",
         ["Method", "Metric", "Oil painting", "3D render", "Watercolour"],
-        rows, align="llrrr")
+        rows, align="llrrr", size="footnotesize")
 
 
 def main():
