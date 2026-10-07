@@ -358,8 +358,8 @@ def t_controls(S):
         rows.append(["Text-only FLUX (ceiling)", n_prompts, "--", "--", "--",
                      ms(ceil["clipscore_b32"])])
         rows.append(["InfU", len(d["infu"]), "--", "--", "--", ms(d["infu"]["clipscore_b32"])])
-        rows.append(["PuLID, start 4", len(d["pulid4"]), "--", "--", "--", ms(d["pulid4"]["clipscore_b32"])])
-        rows.append(["PuLID, start 0", len(d["pulid0"]), "--", "--", "--", ms(d["pulid0"]["clipscore_b32"])])
+        rows.append(["PuLID 4", len(d["pulid4"]), "--", "--", "--", ms(d["pulid4"]["clipscore_b32"])])
+        rows.append(["PuLID 0", len(d["pulid0"]), "--", "--", "--", ms(d["pulid0"]["clipscore_b32"])])
     return tex_table(
         "Two controls",
         r"Upper block: InfU on the only identities whose provenance is certain, "
@@ -370,8 +370,8 @@ def t_controls(S):
         r"unreleased test set). The ceiling is one image per prompt, weighted by "
         r"the prompt's Part 1 cell count.",
         "tab:controls",
-        ["Condition", "$n$", "Detection", "ID, PuLID's enc.", "ID, InfU's enc.", "CLIP B/32"],
-        rows, size="footnotesize")
+        ["Condition", "$n$", "Detection", "ID, PuLID's encoder", "ID, InfU's encoder", "CLIP B/32"],
+        rows, size="footnotesize\\setlength{\\tabcolsep}{3pt}")
 
 
 FILTERS = ["edge_preserve", "stylize_25", "stylize_45", "stylize_60"]
