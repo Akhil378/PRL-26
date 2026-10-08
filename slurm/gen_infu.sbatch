@@ -19,7 +19,7 @@
 # so running InfU quantised would confound the headline comparison with a
 # quantisation effect; the paired control (jobs 1790388/89) could not show that
 # effect to be negligible, and closing the question would have cost 7.9 GPU-h
-# against the 5.2 GPU-h of simply matching the two methods. See CONTEXT 6.2.
+# against the 5.2 GPU-h of simply matching the two methods (report, Appendix C).
 # bf16 measured at 33.8 s/img over 97 cells -- faster than PuLID's 35.1.
 #
 # Shard count and --time come from tools/plan_shards.py using the s/image

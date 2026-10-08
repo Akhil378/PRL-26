@@ -20,9 +20,9 @@
 #   sbatch.tinygpu slurm/gen_style.sbatch pulid "--offload --id-start 1 --id-weight 0.6" 6 style_pulid_iw06
 #
 # Positional arguments, because --export=NONE discards the submitting shell's
-# environment (SUBMITTING.md): <method> "<flags>" [shards] [out-dir-leaf].
+# environment (see README.md): <method> "<flags>" [shards] [out-dir-leaf].
 #
-# InfU runs at bf16 (--cpu-offload) here too, matching Part 1 (CONTEXT 6.2); the
+# InfU runs at bf16 (--cpu-offload) here too, matching Part 1 (report, Appendix C); the
 # run_config.json beside every Part 2 image directory records quantize_8bit: false.
 # 576 cells over 6 shards is 96 per task: ~55 min for InfU at 33.8 s/img and
 # ~56 min for PuLID at 35.1 s/img, both inside the 1:30 request.
@@ -33,7 +33,7 @@
 # PuLID's docs recommend start_step=4 for photorealistic output and 0-1 for
 # stylised output. Part 2's manifest holds BOTH: every base prompt appears once
 # as a photoreal control and three times stylised, and all four share a seed so
-# the within-cell difference isolates the style effect (CONTEXT decision 3).
+# the within-cell difference isolates the style effect.
 #
 # Varying start_step by style would destroy exactly that. The photoreal control
 # and its stylised siblings would differ in two ways at once -- the style AND the

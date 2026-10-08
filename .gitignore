@@ -34,39 +34,3 @@ benchmark/.frll_cache/
 # small and irreplaceable, so they are tracked deliberately -- but the parquets
 # are binary and .gitattributes already marks them as such.
 !results-backup/scores/*.parquet
-# LaTeX build products. These were tracked, and because the cluster is where the
-# report is compiled, every build left them modified there and made
-# `git pull --ff-only` abort. The abort is easy to miss: git prints the error on
-# stderr and "Updating <a>..<b>" on stdout, so a `2>&1 | tail -1` shows the
-# reassuring line and the checkout silently stays behind. Rebuild with
-# `bash tools/build_report.sh`.
-report/report.pdf
-report/report.aux
-report/report.log
-report/report.out
-report/report.toc
-# ... and those of the IDEA Lab template's chain (biber, makeglossaries-lite)
-report/report.lof
-report/report.lot
-report/report.bbl
-report/report.bcf
-report/report.blg
-report/report.run.xml
-report/report.acn
-report/report.acr
-report/report.alg
-report/report.glo
-report/report.gls
-report/report.glg
-report/report.ist
-report/report.glsdefs
-report/biber.out
-report/glossaries.out
-report/report.idx
-# The template's logos are part of the build, unlike every other PNG here.
-!report/assets/*.png
-# The template as the chair supplied it; report/ carries the copy in use.
-IDEA_Lab_LATEX_Template__1_/
-
-# Personal details for the title page (e-mail, matriculation number); local only
-report/config/personal.tex

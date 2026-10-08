@@ -13,7 +13,7 @@
 #   no args        start_step 4 into results/images/pulid (Part 1 as run)
 #   0 pulid_s0     start_step 0, PuLID's app default, into pulid_s0
 # start_step is PuLID's identity-versus-editability knob: its docs suggest 4
-# for photoreal scenes, its app defaults to 0, and CONTEXT 6.17 measures
+# for photoreal scenes, its app defaults to 0, and the report (Section 5.1) measures
 # that the choice moves both ID Loss and CLIPScore by more than the effects
 # Part 1 reports.
 #
@@ -23,7 +23,7 @@
 # pool at the same granularity.
 #
 # bf16 + offload is PuLID's only option -- it has no 8-bit path -- which is what
-# forced the 6.2 decision to run InfU at bf16 too. See CONTEXT 6.2.
+# forced the decision to run InfU at bf16 too (report, Appendix C).
 
 unset SLURM_EXPORT_ENV
 

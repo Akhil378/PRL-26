@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Measure the ArcFace domain-shift floor with geometry-preserving filters.
 
-REPLACES the img2img calibration control, which failed (CONTEXT 6.9): FLUX
+REPLACES the img2img calibration control, which failed: FLUX
 img2img never applied the style, and its "no style" arm still destroyed more
 identity than the actual generations it was meant to calibrate. The design error
 was assuming a generative pass preserves identity while changing appearance. It

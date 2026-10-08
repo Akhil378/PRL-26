@@ -32,7 +32,7 @@ Usage (metrics env, on the cluster, where the images are):
       --identities benchmark/identities
       --out        $WORK/prl26/results/figures/qual
 Write --out outside the repository: the cluster checkout must stay clean or
-`git pull --ff-only` stops working (CONTEXT 5.30).
+`git pull --ff-only` stops working.
 """
 from __future__ import annotations
 

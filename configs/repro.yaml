@@ -26,7 +26,7 @@ memory_profile:
     CLIPScore at both backbones and PickScore were equivalent, so the effect is
     confined to identity fidelity. Matching at bf16 removes the confound rather
     than bounding it, and matters more than usual because the pilot suggests the
-    result may contradict the paper's ranking -- see CONTEXT 6.2 and 6.6.
+    result may contradict the paper's ranking (report, Appendix C).
     The 97 8-bit images are retained as the control's data in
     results/images/pilot_infu_q8; they are NOT part of Part 1.
 
@@ -47,7 +47,7 @@ memory_profile:
     can be kept is the one that matters: the profile is fixed WITHIN a method,
     so no method is ever compared against itself at two precisions. Across
     methods the mismatch is unavoidable, so it is measured rather than assumed
-    -- see CONTEXT 6.2, which runs InfU at both precisions over identical cells
+    -- the precision control (report, Appendix C) runs InfU at both precisions over identical cells
     and takes the paired difference. Worth reporting either way: the paper gives
     no deployment cost figures at all.
 

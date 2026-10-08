@@ -4,7 +4,7 @@
 Every recogniser in Part 1 is an ArcFace network, and each method conditions on
 one of them: PuLID on antelopev2's glintr100, InfU on facexlib's IR-SE50. Each
 method wins under its own encoder, and buffalo_l, meant as the neutral check,
-agrees with glintr100 at r = 0.985 per cell (CONTEXT 6.17). This scores the same
+agrees with glintr100 at r = 0.985 per cell. This scores the same
 images with facenet-pytorch's Inception-ResNet-v1 (Sandberg's 20180402-114759,
 LFW 0.9965): a different architecture, a softmax classifier rather than an
 additive angular margin, and VGGFace2 rather than MS1M, WebFace or Glint360K.

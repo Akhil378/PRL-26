@@ -50,7 +50,7 @@ def ms(series, fmt="%.4f"):
 # The guideline: "All abbreviations used in the tables are given in their
 # captions." Every table caption gets the expansions of the abbreviations found
 # in its caption, header and cells, so no caption can miss one. The same
-# entries are in the list of abbreviations (report/config/acronyms.tex).
+# entries are in the report's list of abbreviations.
 ABBREVIATIONS = [
     ("CASIA", "Institute of Automation, Chinese Academy of Sciences"),
     ("CI", "confidence interval"),

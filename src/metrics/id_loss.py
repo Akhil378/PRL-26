@@ -11,7 +11,7 @@ its own encoder and InfU by a foreign one, and buffalo_l is no neutral check:
 per cell it agrees with glintr100 at r = 0.985. The ranking of the two methods
 follows the recogniser -- each wins under its own -- so every ID Loss claim must
 be reported under both methods' encoders. InfU's is scored by
-tools/score_infu_encoder.py; see CONTEXT 6.17.
+tools/score_infu_encoder.py (report, Section 5.1).
 
 When no face is detected in a generated image the loss is undefined. It is
 returned as None and the caller records the failure; the detection rate is a

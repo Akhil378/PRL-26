@@ -4,7 +4,7 @@
 The pre-registered "style adoption" delta is
     CLIP(styled image, its style phrase) - CLIP(photo image, "a natural colour photograph"),
 two different phrases, so its sign mixes how well the style took with how well
-two sentences happen to match two images (CONTEXT, claim audit of 24 Sep). The
+two sentences happen to match two images (report, Appendix C.1). The
 fix needs the photo image scored against each style phrase too:
     style gain = CLIP(styled image, phrase) - CLIP(photo image, same phrase),
 same method, same identity, same base prompt and seed, same phrase. With all four

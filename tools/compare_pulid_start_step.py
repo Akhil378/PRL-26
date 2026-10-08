@@ -2,7 +2,7 @@
 """PuLID at start_step 0 against InfU and PuLID at start 4: every metric, paired.
 
 Reads <scores>/{infu_aes2,pulid,pulid_s0}_manifest_repro.parquet and the matching
-irse50_*.csv files. See CONTEXT 6.17.
+irse50_*.csv files (report, Section 5.1).
 
 Usage:  python tools/compare_pulid_start_step.py results-backup/scores
 """

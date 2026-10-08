@@ -191,4 +191,4 @@ echo "=== disk used on \$WORK ==="
 du -sh "$WORK/hf" "$WORK/envs" "$PRL" 2>/dev/null || true
 echo
 echo "Next: sbatch.tinygpu slurm/smoke.sbatch quantize \"--quantize-8bit\""
-echo "See slurm/SUBMITTING.md for the full order of operations."
+echo "See README.md (Running on a cluster) for the order of the jobs."
