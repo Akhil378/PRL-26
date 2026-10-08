@@ -183,7 +183,7 @@ def t_part1_headline(S):
                  again(d["pulid0"]), "--", "--"])
     return tex_table(
         "Part 1 reproduction",
-        r"Part 1, $n=1500$ cells per column, mean $\pm$ standard deviation. PuLID 4 "
+        r"$n=1500$ cells per column, mean $\pm$ standard deviation. PuLID 4 "
         r"and PuLID 0: start step 4, documented for realistic images, and 0, its "
         r"default. ID Loss (Equation~\ref{eq:idloss}) is over the detected faces; the "
         r"last row adds the faces a second search finds (Appendix~\ref{app:missing}). "
