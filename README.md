@@ -1,16 +1,17 @@
 # Reproducing and extending InfiniteYou
 
-> **Project notes and current state: [CONTEXT.md](CONTEXT.md).**
-> It carries the current state, every hard-won cluster fact, the measured
-> numbers, and the immediate blocker. It is kept current; this README is not.
-
-Course project, Project Representation Learning (FAU, summer 2026).
+Course project, Project Representation Learning (FAU, IDEA Lab, summer 2026).
 Paper: Jiang et al., *InfiniteYou: Flexible Photo Recrafting While Preserving
 Your Identity*, ICCV 2025. Upstream code: `github.com/bytedance/InfiniteYou`.
 
-- **Part 1** reproduces the Table 1 comparison of InfU against PuLID-FLUX.
+- **Part 1** reproduces the Table 1 comparison of InfU against PuLID-FLUX,
+  under eight face recognisers and two PuLID settings.
 - **Part 2** stress-tests identity preservation under out-of-distribution
-  stylization, and measures *face masking* directly.
+  stylisation, and measures *face masking* directly.
+
+The report is in `report/` (LaTeX sources on the IDEA Lab template; build with
+`bash tools/build_report.sh`). Working notes, measured numbers and cluster facts
+are in [CONTEXT.md](CONTEXT.md).
 
 See `benchmark/GENERATION.md` for why the benchmark had to be rebuilt and how.
 
@@ -23,26 +24,29 @@ See `benchmark/GENERATION.md` for why the benchmark had to be rebuilt and how.
 | `slurm/` | TinyGPU batch scripts |
 | `tools/` | Benchmark construction and validation |
 | `configs/` | Pre-registered run and metric settings |
-| `report/` | Final report sources |
+| `results-backup/scores/` | Per-image score tables and analysis summaries |
+| `env/lock/` | Exact package versions and model revisions per environment |
+| `report/` | Report sources, generated tables, figures |
+| `talk/` | Presentation script and Q&A notes |
+| `tests/` | Local tests (cropping, sharding, resume, paired statistics) |
 
-Generated images and score tables live on `$WORK`, never in this repository.
+The 7,201 generated images (7 GB) are not in this repository: every one can be
+regenerated from the manifests, because each seed is derived from the cell key.
+The per-image score tables are, so every table in the report can be rebuilt
+without a GPU:
+
+```bash
+python tools/make_report_tables.py --scores results-backup/scores --out report/tables
+```
+
+The identity photographs (Face Research Lab London Set, CC BY 4.0) are not
+redistributed; see `benchmark/identities/LICENSES.md` for the source.
 
 ## Status
 
-- [x] Benchmark rebuilt and frozen -- 200 prompts, 1,500 projected cells
-- [x] Part 2 style grid -- 36 base prompts x 4 conditions, 576 cells/method
-- [x] Manifest builder with derived, paired seeds
-- [x] Identity set curated -- 15 FRLL portraits, CC BY 4.0, contamination-free
-- [x] Generation runners (InfU + PuLID), sharded and resumable
-- [x] Metric harness -- ID Loss x2 recognisers, CLIPScore, PickScore, FMI
-- [x] SLURM scripts and pre-registered configs
-- [x] Local test suite (crops, sharding, resume, paired statistics)
-- [x] Smoke test + timing calibration on A100 -- 24.8 s/img at 8-bit
-- [x] Both generation paths proven end to end on the cluster
-- [ ] Part 1 run -- pilot arms running, full arrays not yet launched
-- [ ] Part 2 run -- **no generation script exists yet**, see CONTEXT 6.4
-- [ ] Part 2 calibration control and sweep -- pre-registered, unimplemented
-- [ ] Report -- `report/` is empty; the IDEA Lab template is required
+Complete. Both parts were generated and scored on the FAU TinyGPU cluster
+between 22 August and 29 September 2026, and the report was submitted on
+8 October 2026.
 
 ## Tests
 
