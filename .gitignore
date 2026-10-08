@@ -67,3 +67,6 @@ report/report.idx
 !report/assets/*.png
 # The template as the chair supplied it; report/ carries the copy in use.
 IDEA_Lab_LATEX_Template__1_/
+
+# Personal details for the title page (e-mail, matriculation number); local only
+report/config/personal.tex
