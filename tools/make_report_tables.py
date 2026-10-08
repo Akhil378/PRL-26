@@ -85,11 +85,15 @@ def tex_table(caption_short, caption_long, label, header, rows, align=None,
     align = align or ("l" + "r" * (ncol - 1))
     cells = " ".join(" ".join(str(c) for c in r) for r in rows if r is not None)
     caption_long = caption_long + abbreviations_used(caption_long, " ".join(header), pre_header or "", cells)
-    out = ["\\begin{table}[tbp]", "  \\centering"]
+    # The caption opens with the short title in bold; the details follow in the
+    # report's quieter caption style. The fallbacks keep a table usable on its own.
+    out = ["\\providecommand{\\captiontitle}[1]{\\textbf{#1.}}",
+           "\\providecommand{\\captiondetails}{}",
+           "\\begin{table}[tbp]", "  \\centering"]
     if size:
         out.append(f"  \\{size}")
     out += [
-           f"  \\caption[{caption_short}]{{{caption_long}}}",
+           f"  \\caption[{caption_short}]{{\\captiontitle{{{caption_short}}} \\captiondetails {caption_long}}}",
            f"  \\label{{{label}}}",
            f"  \\begin{{tabular}}{{{align}}}", "    \\toprule"]
     if pre_header:
